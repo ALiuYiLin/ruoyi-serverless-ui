@@ -53,9 +53,18 @@ const currentDate = ref<string>('')
 const passwordInput = ref<HTMLInputElement | null>(null)
 const particleCanvas = ref<HTMLCanvasElement | null>(null)
 
+interface Particle {
+  x: number
+  y: number
+  r: number
+  dx: number
+  dy: number
+  alpha: number
+}
+
 let timer: any = null
 let animationId: any  = null
-let particles: any = []
+let particles: Particle[] = []
 
 const onAvatarError = (e: Event) => {
   (e.target as HTMLImageElement).src = defAva

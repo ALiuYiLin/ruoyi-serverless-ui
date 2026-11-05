@@ -15,10 +15,11 @@ const privateKey = 'MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEAqhHyZfSsYour
   'UP8iWi1Qw0Y='
 
 // 加密
-export function encrypt(txt: string): string | false {
+// jsencrypt 在公钥无效等异常情况下会返回 false，这里统一返回字符串
+export function encrypt(txt: string): string {
   const encryptor = new JSEncrypt()
   encryptor.setPublicKey(publicKey) // 设置公钥
-  return encryptor.encrypt(txt) // 对数据进行加密
+  return encryptor.encrypt(txt) || '' // 对数据进行加密
 }
 
 // 解密
