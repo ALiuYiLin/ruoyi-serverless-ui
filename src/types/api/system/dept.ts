@@ -1,20 +1,6 @@
 import type { BaseEntity } from "../common";
 
-/** 部门查询参数 */
-export interface DeptQueryParams {
-  /** 部门名称 */
-  deptName?: string;
-  /** 状态 */
-  status?: string;
-}
-
-/** 保存部门排序参数 */
-export interface DeptSortParams {
-  deptIds: string
-  orderNums: string
-}
-
-/** 部门信息 */
+/** 部门信息（用户/部门树等场景使用） */
 export interface SysDept extends BaseEntity {
   /** 部门编号 */
   deptId?: number;
