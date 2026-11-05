@@ -1129,10 +1129,10 @@
   </div>
 </template>
 
-<script setup name="Index">
-const version = ref('3.9.2')
+<script setup lang="ts" name="Index">
+const version = ref<string>('3.9.2')
 
-function goTarget(url) {
+function goTarget(url: string): void {
   window.open(url, '__blank')
 }
 </script>
