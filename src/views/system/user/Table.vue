@@ -224,7 +224,7 @@ async function handleConfirmDelete() {
     <Flex direction="column" class="h-full" justify="space-between">
       <!-- 工具栏 -->
       <Flex direction="column" class="min-h-0 flex-1">
-        <Flex class="table-toolbar shrink-0" :padding="14" align="center" justify="space-between">
+        <Flex class="table-toolbar shrink-0" :padding-y="13" :padding-x="20" align="center" justify="space-between">
           <Flex align="center" :gap="5">
             <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
             <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" @click="userStore.openDeleteConfirm(selectedIds)">批量删除</Button>
@@ -249,11 +249,11 @@ async function handleConfirmDelete() {
                 </DropdownMenuCheckboxItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button size="sm" radius="md" :disabled="selectedCount === 0" >
+            <Button size="lg" radius="md" :disabled="selectedCount === 0" >
               <Upload />
               导入
             </Button>
-            <Button size="sm" radius="md" :disabled="selectedCount === 0" >
+            <Button size="lg" radius="md" :disabled="selectedCount === 0" >
               <Download />
               导出
             </Button>

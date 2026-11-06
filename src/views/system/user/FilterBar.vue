@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { Loader2, RotateCcw, Search } from '@lucide/vue'
 
 import Flex from '@/components/Flex/Flex.vue'
@@ -15,15 +15,30 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Card from '@/components/ui/card/Card.vue'
+import DeptTreeSelect from './DeptTreeSelect.vue'
 
 import useSystemUserStore, { type UserListFilter } from '@/store/system/user'
 
 const userStore = useSystemUserStore()
 
+onMounted(() => userStore.loadDeptTree())
+
+/** 关键字搜索：下拉选择搜索字段 + 关键字输入框 */
+const searchField = ref<'userName' | 'phonenumber'>('userName')
+const keyword = ref('')
+const keywordPlaceholder = computed(() =>
+  searchField.value === 'userName' ? '请输入用户名称' : '请输入手机号码',
+)
+const searchFieldOptions = [
+  { value: 'userName', label: '用户名称' },
+  { value: 'phonenumber', label: '手机号码' },
+]
+
 const filters = reactive<UserListFilter>({
   userName: '',
   phonenumber: '',
   status: undefined,
+  deptId: undefined,
   beginTime: '',
   endTime: '',
 })
@@ -33,6 +48,8 @@ function handleSearch() {
   if (userStore.loading) {
     return
   }
+  filters.userName = searchField.value === 'userName' ? keyword.value : ''
+  filters.phonenumber = searchField.value === 'phonenumber' ? keyword.value : ''
   userStore.search({ ...filters })
 }
 
@@ -40,9 +57,12 @@ function handleReset() {
   if (userStore.loading) {
     return
   }
+  keyword.value = ''
+  searchField.value = 'userName'
   filters.userName = ''
   filters.phonenumber = ''
   filters.status = undefined
+  filters.deptId = undefined
   filters.beginTime = ''
   filters.endTime = ''
   userStore.resetQuery()
@@ -52,19 +72,31 @@ function handleReset() {
 <template>
   <Card radius="sm" :padding="16">
     <Form class="form-filter__bar" @submit="handleSearch">
-      <!-- 用户名称 -->
-      <FormField name="userName">
+      <!-- 关键字：搜索字段下拉 + 关键字输入组合 -->
+      <FormField name="keyword">
         <Flex :gap="8">
-          <Label class="whitespace-nowrap">用户名称</Label>
-          <Input v-model="filters.userName" placeholder="请输入用户名称" radius="md" />
-        </Flex>
-      </FormField>
-
-      <!-- 手机号码 -->
-      <FormField name="phonenumber">
-        <Flex :gap="8">
-          <Label class="whitespace-nowrap">手机号码</Label>
-          <Input v-model="filters.phonenumber" placeholder="请输入手机号码" radius="md" />
+          <!-- <Label class="whitespace-nowrap">关键字</Label> -->
+          <Flex :gap="0">
+            <Select
+              :model-value="searchField"
+              @update:model-value="value => (searchField = value as 'userName' | 'phonenumber')"
+            >
+              <SelectTrigger class="w-28 rounded-r-none" radius="md">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent radius="md">
+                <SelectItem v-for="option in searchFieldOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              v-model="keyword"
+              :placeholder="keywordPlaceholder"
+              class="-ml-px w-56 rounded-l-none"
+              radius="md"
+            />
+          </Flex>
         </Flex>
       </FormField>
 
@@ -94,6 +126,21 @@ function handleReset() {
           <Input v-model="filters.beginTime" type="date" radius="md" />
           <span>至</span>
           <Input v-model="filters.endTime" type="date" radius="md" />
+        </Flex>
+      </FormField>
+
+      <!-- 部门 -->
+      <FormField name="deptId">
+        <Flex :gap="8">
+          <Label class="whitespace-nowrap">部门</Label>
+          <div class="w-56">
+            <DeptTreeSelect
+              :model-value="filters.deptId"
+              :options="userStore.deptOptions"
+              placeholder="请选择部门"
+              @update:model-value="value => (filters.deptId = value)"
+            />
+          </div>
         </Flex>
       </FormField>
 

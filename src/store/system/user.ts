@@ -23,6 +23,8 @@ export interface UserListFilter {
   phonenumber?: string
   /** 状态（0正常 1停用） */
   status?: '0' | '1'
+  /** 部门编号 */
+  deptId?: number
   /** 创建时间起 */
   beginTime?: string
   /** 创建时间止 */
@@ -134,6 +136,7 @@ export const useSystemUserStore = defineStore('system-user', () => {
     queryParams.userName = filter.userName || undefined
     queryParams.phonenumber = filter.phonenumber || undefined
     queryParams.status = filter.status || undefined
+    queryParams.deptId = filter.deptId || undefined
     queryParams.params = {
       beginTime: filter.beginTime || undefined,
       endTime: filter.endTime || undefined,

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed } from "vue"
+import { useRoute } from "vue-router"
+
 import AppSidebar from "@/layout/base/components/AppSidebar.vue"
 import {
   Breadcrumb,
@@ -14,6 +17,18 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+
+const route = useRoute()
+
+/** 当前路由匹配到的菜单标题，用于面包屑/页面名称展示 */
+const breadcrumbs = computed(() =>
+  route.matched
+    .filter(item => item.meta?.title)
+    .map(item => ({
+      title: item.meta.title as string,
+      path: item.path,
+    })),
+)
 </script>
 
 <template>
@@ -29,14 +44,19 @@ import {
           />
           <Breadcrumb>
             <BreadcrumbList>
-              <BreadcrumbItem class="hidden md:block">
-                <BreadcrumbLink href="#">
-                  Building Your Application
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator class="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+              <template v-for="(item, index) in breadcrumbs" :key="item.path">
+                <BreadcrumbSeparator v-if="index > 0" class="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage v-if="index === breadcrumbs.length - 1">
+                    {{ item.title }}
+                  </BreadcrumbPage>
+                  <BreadcrumbLink v-else as-child>
+                    <RouterLink :to="item.path">{{ item.title }}</RouterLink>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              </template>
+              <BreadcrumbItem v-if="!breadcrumbs.length">
+                <BreadcrumbPage>-</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

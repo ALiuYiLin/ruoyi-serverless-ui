@@ -4,7 +4,6 @@ import router, { constantRoutes, dynamicRoutes } from '@/router'
 import { getRouters } from '@/api/menu'
 import Layout from '@/layout/base'
 import ParentView from '@/components/ParentView/index.vue'
-import InnerLink from '@/layout/components/InnerLink/index.vue'
 import type { AppRouteRecord, LazyRouteComponent, RouterVo } from '@/types'
 
 // 匹配views里面所有的.vue文件
@@ -82,9 +81,6 @@ function resolveComponent(component?: string): AppRouteRecord['component'] {
   }
   if (component === 'ParentView') {
     return ParentView
-  }
-  if (component === 'InnerLink') {
-    return InnerLink
   }
   return loadView(component)
 }
