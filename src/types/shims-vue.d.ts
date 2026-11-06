@@ -7,7 +7,8 @@
  * 形式补齐项目显式导入的 Vue 导出，均为 any，保持与迁移前一致的宽松检查。
  *
  * 其余 Vue API（ref / computed / watch 等）通过 unplugin-auto-import 生成的
- * auto-imports.d.ts 自动导入，不需要在此声明。
+ * auto-imports.d.ts 自动导入；但 shadcn-vue 组件是显式 `import { ref } from 'vue'`
+ * 的，因此这里也需要提供对应导出。
  *
  * TODO: 完成业务代码类型迁移后删除本文件，改用 Vue 官方类型。
  *
@@ -29,4 +30,21 @@ declare module 'vue' {
   export type App = any
   /** 组件类型（env.d.ts 中 .vue 模块声明使用） */
   export type DefineComponent<Props = any, RawBindings = any, D = any> = any
+
+  /* ---- shadcn-vue 组件显式导入的 Vue API（宽松版本） ---- */
+
+  /** 组件类型 */
+  export type Component = any
+  /** 响应式引用 */
+  export type Ref<T = any> = any
+  /** 计算属性引用 */
+  export type ComputedRef<T = any> = any
+  /** DOM 属性类型 */
+  export type HTMLAttributes<T = any> = any
+  /** 创建响应式引用（保持泛型调用合法，返回宽松 Ref） */
+  export function ref<T = any>(value?: T): Ref<T>
+  /** 创建计算属性（保持泛型调用合法，返回宽松 ComputedRef） */
+  export function computed<T = any>(getter: () => T): ComputedRef<T>
+  /** 可写计算属性 */
+  export function computed<T = any>(options: { get: () => T; set?: (value: any) => void }): ComputedRef<T>
 }
