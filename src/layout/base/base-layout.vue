@@ -59,5 +59,6 @@ import {
 <style scoped>
 .main-content{
   padding: 18px 24px;
+  flex: 1;
 }
 </style>

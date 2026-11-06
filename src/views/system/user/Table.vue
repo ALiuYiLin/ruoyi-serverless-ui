@@ -88,52 +88,54 @@ function statusLabel(status: UserRow['status']): string {
 
 <template>
   <Card radius="sm" :padding="0">
-    <Flex direction="column">
+    <Flex direction="column" class="h-full" justify="space-between">
       <!-- 工具栏 -->
-      <Flex class="table-toolbar" align="center" :padding="14" :gap="5">
-        <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
-        <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >批量删除</Button>
-        <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button>
+      <Flex direction="column">
+        <Flex class="table-toolbar" align="center" :padding="14" :gap="5">
+          <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
+          <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >批量删除</Button>
+          <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button>
+        </Flex>
+    
+        <!-- 表格 -->
+        <Table class="border-b-2">
+          <TableHeader>
+            <TableRow>
+              <TableHead class="w-10">
+                <Checkbox
+                  :model-value="selectAllState"
+                  @update:model-value="toggleAll"
+                />
+              </TableHead>
+              <TableHead>用户名称</TableHead>
+              <TableHead>手机号码</TableHead>
+              <TableHead>状态</TableHead>
+              <TableHead>创建时间</TableHead>
+              <TableHead>操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="row in currentRows" :key="row.id">
+              <TableCell>
+                <Checkbox
+                  :model-value="selectedIds.includes(row.id)"
+                  @update:model-value="value => toggleRow(row.id, value)"
+                />
+              </TableCell>
+              <TableCell>{{ row.userName }}</TableCell>
+              <TableCell>{{ row.phonenumber }}</TableCell>
+              <TableCell>{{ statusLabel(row.status) }}</TableCell>
+              <TableCell>{{ row.createTime }}</TableCell>
+              <TableCell>
+                <Flex :gap="4">
+                  <Button variant="ghost" size="sm" radius="md">修改</Button>
+                  <Button color="danger" variant="ghost" size="sm" radius="md">删除</Button>
+                </Flex>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </Flex>
-  
-      <!-- 表格 -->
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead class="w-10">
-              <Checkbox
-                :model-value="selectAllState"
-                @update:model-value="toggleAll"
-              />
-            </TableHead>
-            <TableHead>用户名称</TableHead>
-            <TableHead>手机号码</TableHead>
-            <TableHead>状态</TableHead>
-            <TableHead>创建时间</TableHead>
-            <TableHead>操作</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="row in currentRows" :key="row.id">
-            <TableCell>
-              <Checkbox
-                :model-value="selectedIds.includes(row.id)"
-                @update:model-value="value => toggleRow(row.id, value)"
-              />
-            </TableCell>
-            <TableCell>{{ row.userName }}</TableCell>
-            <TableCell>{{ row.phonenumber }}</TableCell>
-            <TableCell>{{ statusLabel(row.status) }}</TableCell>
-            <TableCell>{{ row.createTime }}</TableCell>
-            <TableCell>
-              <Flex :gap="4">
-                <Button variant="ghost" size="sm" radius="md">修改</Button>
-                <Button color="danger" variant="ghost" size="sm" radius="md">删除</Button>
-              </Flex>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
   
       <!-- 分页 -->
       <Flex class="border-t-2" align="center" justify="space-between" :gap="8" :padding-x="14" :padding-y="9" >
@@ -171,6 +173,6 @@ function statusLabel(status: UserRow['status']): string {
 
 <style scoped>
 .table-toolbar{
-  border-bottom: 1px solid #f0f0f0ff;
+  border-bottom: 2px solid #f0f0f0ff;
 }
 </style>

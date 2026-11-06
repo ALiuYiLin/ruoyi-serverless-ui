@@ -8,14 +8,14 @@ import Button from "@/components/ui/button/Button.vue";
     <Flex direction="column" :gap="5">
       <h1 class="page-title">耳机音频</h1>
       <p class="page-subtitle">
-        数码 3C / 耳机音频 · 共 96 件商品 · 最近更新于 2 小时前
+        <!-- 数码 3C / 耳机音频 · 共 96 件商品 · 最近更新于 2 小时前 -->
       </p>
     </Flex>
     <Flex direction="column-reverse">
       <Flex :gap="10">
-        <Button variant="outline" radius="md">批量删除</Button>
-        <Button variant="outline" radius="md">导入</Button>
-        <Button variant="outline" radius="md">导出</Button>
+        <Button variant="outline" radius="md">新增</Button>
+        <!-- <Button variant="outline" radius="md">导入</Button> -->
+        <!-- <Button variant="outline" radius="md">导出</Button> -->
       </Flex>
     </Flex>
   </Flex>

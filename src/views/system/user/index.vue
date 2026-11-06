@@ -1,8 +1,8 @@
 <template>
-  <Flex direction="column" :gap="14">
+  <Flex direction="column" :gap="14" class="h-full">
     <PageHead></PageHead>
     <FilterBar></FilterBar>
-    <Table></Table>
+    <Table class="flex-1"></Table>
   </Flex>
 </template>
 <script lang="ts" setup>
