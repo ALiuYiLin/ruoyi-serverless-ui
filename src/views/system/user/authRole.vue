@@ -46,17 +46,15 @@
 </template>
 
 <script setup lang="ts" name="AuthRole">
+import type { TableInstance } from 'element-plus'
 import { getAuthRole, updateAuthRole } from "@/api/system/user"
 import type { SysRole } from '@/types/api/system/role'
-import type { SysUser } from '@/types/api/system/user'
+import type { SysUser, SysRoleWithFlag } from '@/types/api/system/user'
 
 const route = useRoute()
-const { proxy } = getCurrentInstance()
+const proxy = getCurrentInstance()!.proxy!
 
-interface SysRoleWithFlag extends SysRole {
-  /** 用户是否存在此角色标识 */
-  flag: boolean;
-}
+const roleRef = ref<TableInstance>()
 
 const loading = ref<boolean>(true)
 const total = ref<number>(0)
@@ -73,7 +71,7 @@ const form = ref<SysUser>({
 /** 单击选中行数据 */
 function clickRow(row: SysRole) {
   if (checkSelectable(row)) {
-    proxy.$refs["roleRef"].toggleRowSelection(row)
+    roleRef.value?.toggleRowSelection(row)
   }
 }
 
@@ -83,8 +81,8 @@ function handleSelectionChange(selection: SysRole[]) {
 }
 
 /** 保存选中的数据编号 */
-function getRowKey(row: SysRole): number {
-  return row.roleId!
+function getRowKey(row: SysRole): string {
+  return String(row.roleId!)
 }
 
 // 检查角色状态
@@ -119,7 +117,7 @@ function submitForm() {
       nextTick(() => {
         roles.value.forEach((row: SysRoleWithFlag) => {
           if (row.flag) {
-            proxy.$refs["roleRef"].toggleRowSelection(row)
+            roleRef.value?.toggleRowSelection(row)
           }
         })
       })

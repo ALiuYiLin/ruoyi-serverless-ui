@@ -70,6 +70,7 @@ import Cookies from "js-cookie"
 import { encrypt, decrypt } from "@/utils/jsencrypt"
 import useUserStore from '@/store/modules/user'
 import defaultSettings from '@/settings'
+import type { FormInstance } from 'element-plus'
 import type { CaptchaInfoResult } from '@/types/api/login'
 import type { LoginForm } from '@/types/api/login'
 
@@ -78,7 +79,7 @@ const footerContent = defaultSettings.footerContent
 const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
-const { proxy } = getCurrentInstance()
+const proxy = getCurrentInstance()!.proxy!
 
 const loginForm = ref<LoginForm>({
   username: "admin",
@@ -107,14 +108,15 @@ watch(route, (newRoute: any) => {
 }, { immediate: true })
 
 function handleLogin(): void {
-  proxy.$refs.loginRef.validate((valid: boolean) => {
+  const loginRef = proxy.$refs.loginRef as FormInstance
+  loginRef.validate((valid: boolean) => {
     if (valid) {
       loading.value = true
       // 勾选了需要记住密码设置在 cookie 中设置记住用户名和密码
       if (loginForm.value.rememberMe) {
         Cookies.set("username", loginForm.value.username, { expires: 30 })
         Cookies.set("password", encrypt(loginForm.value.password), { expires: 30 })
-        Cookies.set("rememberMe", loginForm.value.rememberMe, { expires: 30 })
+        Cookies.set("rememberMe", String(loginForm.value.rememberMe), { expires: 30 })
       } else {
         // 否则移除
         Cookies.remove("username")
@@ -156,11 +158,13 @@ function getCookie(): void {
   const username = Cookies.get("username")
   const password = Cookies.get("password")
   const rememberMe = Cookies.get("rememberMe")
+  // 保持原运行时行为：整体替换表单对象（code/uuid 会被清空，随后 getCode 会回填 uuid）
   loginForm.value = {
     username: username === undefined ? loginForm.value.username : username,
-    password: password === undefined ? loginForm.value.password : decrypt(password),
+    // jsencrypt 解密失败会返回 false，原实现直接赋值，这里仅做类型断言，不改变运行时数据
+    password: password === undefined ? loginForm.value.password : (decrypt(password) as string),
     rememberMe: rememberMe === undefined ? false : Boolean(rememberMe)
-  }
+  } as LoginForm
 }
 
 getCode()

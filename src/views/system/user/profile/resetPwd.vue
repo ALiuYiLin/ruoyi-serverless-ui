@@ -17,11 +17,14 @@
 </template>
 
 <script setup lang="ts">
+import type { FormInstance } from 'element-plus'
 import { usePasswordRule } from "@/utils/passwordRule"
 import { updateUserPwd } from "@/api/system/user"
 
-const { proxy } = getCurrentInstance()
+const proxy = getCurrentInstance()!.proxy!
 const { infoPwdValidator } = usePasswordRule()
+
+const pwdRef = ref<FormInstance>()
 
 interface UserProfilePwd {
   // 旧密码
@@ -53,7 +56,7 @@ const rules = {
 
 /** 提交按钮 */
 function submit() {
-  proxy.$refs.pwdRef.validate((valid: boolean) => {
+  pwdRef.value?.validate((valid: boolean) => {
     if (valid) {
       updateUserPwd(user.oldPassword!, user.newPassword!).then(() => {
         proxy.$modal.msgSuccess("修改成功")

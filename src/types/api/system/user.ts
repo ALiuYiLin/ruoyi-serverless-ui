@@ -56,6 +56,16 @@ export interface SysUser extends BaseEntity {
   roleIds?: number[];
   /** 岗位组 */
   postIds?: number[];
+  /** 最后登录IP */
+  loginIp?: string;
+  /** 最后登录时间 */
+  loginDate?: string;
+}
+
+/** 带“用户是否拥有该角色”标识的角色信息（授权角色接口返回） */
+export interface SysRoleWithFlag extends SysRole {
+  /** 用户是否存在此角色标识 */
+  flag: boolean;
 }
 
 /** 注册信息 */
@@ -102,6 +112,6 @@ export interface UserProfileAvatarResult extends AjaxResult {
 export interface UserAuthRoleResult extends AjaxResult {
   /** 用户信息 */
   user: SysUser
-  /** 角色列表 */
-  roles: SysRole[]
+  /** 角色列表（含用户是否拥有该角色的标识） */
+  roles: SysRoleWithFlag[]
 }

@@ -61,11 +61,14 @@
 <script setup lang="ts">
 import "vue-cropper/dist/index.css"
 import { VueCropper } from "vue-cropper"
+import type { UploadRequestOptions } from 'element-plus'
 import { uploadAvatar } from "@/api/system/user"
 import useUserStore from "@/store/modules/user"
 
 const userStore = useUserStore()
-const { proxy } = getCurrentInstance()
+const proxy = getCurrentInstance()!.proxy!
+
+const cropper = ref<InstanceType<typeof VueCropper>>()
 
 const open = ref<boolean>(false)
 const visible = ref<boolean>(false)
@@ -93,23 +96,30 @@ function modalOpened() {
   visible.value = true
 }
 
-/** 覆盖默认上传行为 */
-function requestUpload() {}
+/**
+ * 覆盖默认上传行为：仅借用上传组件选择文件，实际上传在 uploadImg() 中完成。
+ * Element Plus 的 UploadRequestHandler 类型要求返回 XMLHttpRequest | Promise<unknown>，
+ * 但运行时允许返回 undefined；若返回 Promise，EP 会把它当作上传结果并触发 onSuccess，
+ * 因此这里保持返回 undefined，仅做类型断言。
+ */
+function requestUpload(_options: UploadRequestOptions): XMLHttpRequest {
+  return undefined as unknown as XMLHttpRequest
+}
 
 /** 向左旋转 */
 function rotateLeft() {
-  proxy.$refs.cropper.rotateLeft()
+  cropper.value?.rotateLeft()
 }
 
 /** 向右旋转 */
 function rotateRight() {
-  proxy.$refs.cropper.rotateRight()
+  cropper.value?.rotateRight()
 }
 
 /** 图片缩放 */
 function changeScale(num: number) {
   num = num || 1
-  proxy.$refs.cropper.changeScale(num)
+  cropper.value?.changeScale(num)
 }
 
 /** 上传预处理 */
@@ -128,7 +138,7 @@ function beforeUpload(file: File) {
 
 /** 上传图片 */
 function uploadImg() {
-  proxy.$refs.cropper.getCropBlob((data: Blob) => {
+  cropper.value?.getCropBlob((data: Blob) => {
     const formData = new FormData()
     formData.append("avatarfile", data, options.filename)
     uploadAvatar(formData).then(response => {

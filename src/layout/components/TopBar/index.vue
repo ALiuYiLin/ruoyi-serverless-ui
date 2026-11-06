@@ -25,9 +25,9 @@ const permissionStore = usePermissionStore()
 const sidebarRouters = computed(() => permissionStore.sidebarRouters)
 const theme = computed(() => settingsStore.theme)
 const device = computed(() => appStore.device)
-const activeMenu = computed(() => {
+const activeMenu = computed<string>(() => {
   const { meta, path } = route
-  if (meta.activeMenu) {
+  if (typeof meta.activeMenu === 'string') {
     return meta.activeMenu
   }
   return path

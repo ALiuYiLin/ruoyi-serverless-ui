@@ -33,8 +33,8 @@ export interface SysUserRole {
 export interface SysUserRoles {
   /** 用户编号 */
   userId?: number;
-  /** 角色编号组 */
-  roleIds?: number[];
+  /** 角色编号组：后端以逗号分隔字符串接收 */
+  roleIds?: string;
 }
 
 

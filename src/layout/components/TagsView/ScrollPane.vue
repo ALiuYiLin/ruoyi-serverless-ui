@@ -13,9 +13,19 @@
 import useTagsViewStore from '@/store/modules/tagsView'
 
 const tagAndTagSpacing = ref<number>(4)
-const { proxy } = getCurrentInstance()
+const proxy = getCurrentInstance()!.proxy!
 
-const scrollWrapper = computed(() => proxy.$refs.scrollContainer.$refs.wrapRef)
+/** el-scrollbar 实例：$refs.wrapRef 为实际滚动元素 */
+interface ScrollContainerInstance {
+  $refs: { wrapRef: HTMLElement }
+  $el: HTMLElement
+}
+
+function getScrollContainer(): ScrollContainerInstance {
+  return proxy.$refs.scrollContainer as ScrollContainerInstance
+}
+
+const scrollWrapper = computed(() => getScrollContainer().$refs.wrapRef)
 
 onMounted(() => {
   scrollWrapper.value.addEventListener('scroll', emitScroll, true)
@@ -75,7 +85,7 @@ const tagsViewStore = useTagsViewStore()
 const visitedViews = computed(() => tagsViewStore.visitedViews)
 
 function moveToTarget(currentTag: any): void {
-  const $container = proxy.$refs.scrollContainer.$el
+  const $container = getScrollContainer().$el
   const $containerWidth = $container.offsetWidth
   const $scrollWrapper = scrollWrapper.value
 

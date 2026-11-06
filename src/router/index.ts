@@ -114,6 +114,7 @@ export const dynamicRoutes: AppRouteRecord[] = [
 
 const router = createRouter({
   history: createWebHistory(),
+  // AppRouteRecord 含若依扩展字段（hidden/permissions 等），与 vue-router 的路由联合类型不兼容，边界处断言
   routes: constantRoutes as unknown as RouteRecordRaw[],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

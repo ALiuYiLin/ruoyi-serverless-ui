@@ -41,7 +41,11 @@
 
 <script setup lang="ts">
 import cache from '@/plugins/cache'
+import type { CheckboxValueType, TransferKey } from 'element-plus'
 import type { TableShowColumns } from '@/types/api/common'
+
+/** 显隐列数组模式下的列元素（运行时数组元素可能携带 key） */
+type TableColumn = TableShowColumns & { key?: string | number }
 
 const props = defineProps({
   /* 是否显示检索条件 */
@@ -78,6 +82,14 @@ const props = defineProps({
 
 const emits = defineEmits(['update:showSearch', 'queryTable'])
 
+/** props.columns 的运行时声明只能是 Array | Object，这里按实际结构断言为具体类型 */
+function getColumnList(): TableColumn[] {
+  return props.columns as TableColumn[]
+}
+function getColumnMap(): Record<string, TableColumn> {
+  return props.columns as Record<string, TableColumn>
+}
+
 // 显隐数据
 const value = ref<number[]>([])
 // 弹出层标题
@@ -95,14 +107,30 @@ const style = computed(() => {
 
 // 是否全选/半选 状态
 const isChecked = computed({
-  get: () => Array.isArray(props.columns) ? props.columns.every((col: TableShowColumns) => col.visible) : Object.values(props.columns).every((col) => (col as TableShowColumns).visible),
+  get: () => {
+    if (Array.isArray(props.columns)) {
+      return getColumnList().every((col) => col.visible)
+    }
+    return Object.values(getColumnMap()).every((col) => col.visible)
+  },
   set: () => {}
 })
-const isIndeterminate = computed(() => Array.isArray(props.columns) ? props.columns.some((col: TableShowColumns) => col.visible) && !isChecked.value : Object.values(props.columns).some((col) => (col as TableShowColumns).visible) && !isChecked.value)
-const transferData = computed(() => Array.isArray(props.columns) ? props.columns.map((item: TableShowColumns, index: number) => ({ key: index, label: item.label })) : Object.keys(props.columns).map((key, index) => ({ key: index, label: props.columns[key].label })))
+const isIndeterminate = computed(() => {
+  if (Array.isArray(props.columns)) {
+    return getColumnList().some((col) => col.visible) && !isChecked.value
+  }
+  return Object.values(getColumnMap()).some((col) => col.visible) && !isChecked.value
+})
+const transferData = computed(() => {
+  if (Array.isArray(props.columns)) {
+    return getColumnList().map((item, index) => ({ key: index, label: item.label }))
+  }
+  const columnMap = getColumnMap()
+  return Object.keys(columnMap).map((key, index) => ({ key: index, label: columnMap[key].label }))
+})
 
 // 搜索
-const { proxy } = getCurrentInstance()!
+const proxy = getCurrentInstance()!.proxy!
 function toggleSearch(): void {
   let el: HTMLElement | null = proxy!.$el
   let formEl: HTMLElement | null = null
@@ -139,15 +167,17 @@ function refresh(): void {
 }
 
 // 右侧列表元素变化
-function dataChange(data: number[]): void {
+function dataChange(data: TransferKey[]): void {
   if (Array.isArray(props.columns)) {
-    for (let item in props.columns) {
-      const key = props.columns[item].key
-      props.columns[item].visible = !data.includes(parseInt(key))
+    const columnList = getColumnList()
+    for (const item in columnList) {
+      const key = columnList[item].key
+      columnList[item].visible = !data.includes(parseInt(String(key)))
     }
   } else {
-    Object.keys(props.columns).forEach((key, index) => {
-      props.columns[key].visible = !data.includes(index)
+    const columnMap = getColumnMap()
+    Object.keys(columnMap).forEach((key, index) => {
+      columnMap[key].visible = !data.includes(index)
     })
   }
   saveStorage()
@@ -164,12 +194,13 @@ if (props.storageKey) {
     const saved = cache.local.getJSON(props.storageKey)
     if (saved && typeof saved === 'object') {
       if (Array.isArray(props.columns)) {
-        props.columns.forEach((col: TableShowColumns, index: number) => {
+        getColumnList().forEach((col, index) => {
           if (saved[index] !== undefined) col.visible = saved[index]
         })
       } else {
-        Object.keys(props.columns).forEach(key => {
-          if (saved[key] !== undefined) props.columns[key].visible = saved[key]
+        const columnMap = getColumnMap()
+        Object.keys(columnMap).forEach(key => {
+          if (saved[key] !== undefined) columnMap[key].visible = saved[key]
         })
       }
     }
@@ -178,29 +209,31 @@ if (props.storageKey) {
 if (props.showColumnsType == "transfer") {
   // transfer穿梭显隐列初始默认隐藏列
   if (Array.isArray(props.columns)) {
-    for (let item in props.columns) {
-      if (props.columns[item].visible === false) {
+    const columnList = getColumnList()
+    for (const item in columnList) {
+      if (columnList[item].visible === false) {
         value.value.push(parseInt(item))
       }
     }
   } else {
-    Object.keys(props.columns).forEach((key, index) => {
-      if (props.columns[key].visible === false) {
+    const columnMap = getColumnMap()
+    Object.keys(columnMap).forEach((key, index) => {
+      if (columnMap[key].visible === false) {
         value.value.push(index)
       }
     })
   }
 }
 
-// 单勾选
-function checkboxChange(event: boolean, key: string): void {
+// 单勾选（el-checkbox 绑定 boolean 时 change 的实际值恒为 boolean）
+function checkboxChange(event: CheckboxValueType, key: string | number): void {
   if (Array.isArray(props.columns)) {
-    const col = props.columns.filter((item: any) => item.key == key)[0]
+    const col = getColumnList().filter((item) => item.key == key)[0]
     if (col) {
-      col.visible = event
+      col.visible = event as boolean
     }
   } else {
-    props.columns[key].visible = event
+    getColumnMap()[String(key)].visible = event as boolean
   }
   saveStorage()
 }
@@ -209,9 +242,9 @@ function checkboxChange(event: boolean, key: string): void {
 function toggleCheckAll(): void {
   const newValue = !isChecked.value
   if (Array.isArray(props.columns)) {
-    props.columns.forEach((col: TableShowColumns) => (col.visible = newValue))
+    getColumnList().forEach((col) => (col.visible = newValue))
   } else {
-    Object.values(props.columns).forEach((col) => ((col as TableShowColumns).visible = newValue))
+    Object.values(getColumnMap()).forEach((col) => (col.visible = newValue))
   }
   saveStorage()
 }
@@ -222,9 +255,10 @@ function saveStorage(): void {
   try {
     let state: { [key: string]: boolean } = {}
     if (Array.isArray(props.columns)) {
-      props.columns.forEach((col: TableShowColumns, index: number) => { state[index] = col.visible })
+      getColumnList().forEach((col, index) => { state[index] = col.visible })
     } else {
-      Object.keys(props.columns).forEach(key => { state[key] = props.columns[key].visible })
+      const columnMap = getColumnMap()
+      Object.keys(columnMap).forEach(key => { state[key] = columnMap[key].visible })
     }
     cache.local.setJSON(props.storageKey, state)
   } catch (e) {}

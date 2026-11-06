@@ -72,10 +72,14 @@
 </template>
 
 <script setup lang="ts">
+import type { ComponentInternalInstance, PropType } from 'vue'
+import type { TreeKey, TreeNodeData, CheckedInfo } from 'element-plus'
+import type ElementTreeNode from 'element-plus/es/components/tree/src/model/node'
+
 const props = defineProps({
   // 树形数据
   treeData: {
-    type: Array,
+    type: Array as PropType<TreeNodeData[]>,
     default: () => []
   },
   // 标题
@@ -138,7 +142,7 @@ const props = defineProps({
   },
   // 默认展开的节点的key数组
   defaultExpandedKeys: {
-    type: Array,
+    type: Array as PropType<TreeKey[]>,
     default: () => []
   },
   // 默认宽度
@@ -351,24 +355,24 @@ const handleRefresh = (): void => {
   emit('refresh')
 }
 
-// 节点点击事件
-const onNodeClick = (data: any, node: any, e: Event): void => {
-  emit('node-click', data, node, e)
+// 节点点击事件（el-tree 的 node-click 会传入 4 个参数，这里按原行为继续转发第 3 个参数）
+const onNodeClick = (data: TreeNodeData, node: ElementTreeNode, nodeInstance: ComponentInternalInstance | null): void => {
+  emit('node-click', data, node, nodeInstance)
 }
 
 // 复选框选中事件
-const onCheck = (data: any, checkedInfo: any): void => {
+const onCheck = (data: TreeNodeData, checkedInfo: CheckedInfo): void => {
   emit('check', data, checkedInfo)
 }
 
 // 节点展开事件
-const onNodeExpand = (data: any, node: any, e: Event): void => {
-  emit('node-expand', data, node, e)
+const onNodeExpand = (data: TreeNodeData, node: ElementTreeNode, nodeInstance: ComponentInternalInstance | null): void => {
+  emit('node-expand', data, node, nodeInstance)
 }
 
 // 节点折叠事件
-const onNodeCollapse = (data: any, node: any, e: Event): void => {
-  emit('node-collapse', data, node, e)
+const onNodeCollapse = (data: TreeNodeData, node: ElementTreeNode, nodeInstance: ComponentInternalInstance | null): void => {
+  emit('node-collapse', data, node, nodeInstance)
 }
 
 const setCurrentKey = (key: string | number): void => {

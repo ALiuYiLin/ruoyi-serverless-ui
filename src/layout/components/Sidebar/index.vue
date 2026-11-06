@@ -60,9 +60,9 @@ const getMenuTextColor = computed(() => {
   return sideTheme.value === 'theme-dark' ? variables.menuText : variables.menuLightText
 })
 
-const activeMenu = computed(() => {
+const activeMenu = computed<string>(() => {
   const { meta, path } = route
-  if (meta.activeMenu) {
+  if (typeof meta.activeMenu === 'string') {
     return meta.activeMenu
   }
   return path

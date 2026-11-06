@@ -121,6 +121,7 @@ const initParticles = () => {
   const canvas = particleCanvas.value
   if (!canvas) return
   const ctx = canvas.getContext('2d')
+  if (!ctx) return
   const resize = () => {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight

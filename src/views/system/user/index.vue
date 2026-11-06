@@ -29,10 +29,10 @@
             <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['system:user:add']">新增</el-button>
           </el-col>
           <el-col :span="1.5">
-            <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate" v-hasPermi="['system:user:edit']">修改</el-button>
+            <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate()" v-hasPermi="['system:user:edit']">修改</el-button>
           </el-col>
           <el-col :span="1.5">
-            <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['system:user:remove']">删除</el-button>
+            <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete()" v-hasPermi="['system:user:remove']">删除</el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button type="info" plain icon="Upload" @click="handleImport" v-hasPermi="['system:user:import']">导入</el-button>
@@ -100,7 +100,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="归属部门" prop="deptId">
-              <el-tree-select v-model="form.deptId" :data="enabledDeptOptions" :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id" placeholder="请选择归属部门" clearable check-strictly />
+              <el-tree-select v-model="form.deptId" :data="enabledDeptOptions" :props="deptTreeProps" value-key="id" placeholder="请选择归属部门" clearable check-strictly />
             </el-form-item>
           </el-col>
         </el-row>
@@ -148,14 +148,14 @@
           <el-col :span="12">
             <el-form-item label="岗位">
               <el-select v-model="form.postIds" multiple placeholder="请选择">
-                <el-option v-for="item in postOptions" :key="item.postId" :label="item.postName" :value="item.postId" :disabled="item.status == 1"></el-option>
+                <el-option v-for="item in postOptions" :key="item.postId" :label="item.postName" :value="item.postId" :disabled="item.status == '1'"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="角色">
               <el-select v-model="form.roleIds" multiple placeholder="请选择">
-                <el-option v-for="item in roleOptions" :key="item.roleId" :label="item.roleName" :value="item.roleId" :disabled="item.status == 1"></el-option>
+                <el-option v-for="item in roleOptions" :key="item.roleId" :label="item.roleName" :value="item.roleId" :disabled="item.status == '1'"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -188,16 +188,31 @@ import TreePanel from "@/components/TreePanel/index.vue"
 import ExcelImportDialog from "@/components/ExcelImportDialog/index.vue"
 import UserViewDrawer from "./view.vue"
 import { usePasswordRule } from "@/utils/passwordRule"
+import type { FormInstance, FormRules, TreeOptionProps } from 'element-plus'
 import { changeUserStatus, listUser, resetUserPwd, delUser, getUser, updateUser, addUser, deptTreeSelect } from "@/api/system/user"
 import type { SysUser, UserQueryParams, UserFormDataResult } from '@/types/api/system/user'
 import type { SysRole } from '@/types/api/system/role'
 import type { SysPost } from '@/types/api/system/post'
 import type { TreeSelect, TableShowColumns, AjaxResult } from '@/types/api/common'
 
+/** 岗位下拉项（后端返回的岗位上 postId 必填，用于 el-option 的 value） */
+type PostOption = SysPost & { postId: number }
+/** 角色下拉项（后端返回的角色上 roleId 必填，用于 el-option 的 value） */
+type RoleOption = SysRole & { roleId: number }
+/** 树形侧边栏实例（组件暴露的 setCurrentKey 运行时接受 null 以清除选中，而暴露类型未包含 null） */
+type DeptTreeInstance = InstanceType<typeof TreePanel> & {
+  setCurrentKey: (key: string | number | null) => void
+}
+
 const router = useRouter()
-const { proxy } = getCurrentInstance()
+const proxy = getCurrentInstance()!.proxy!
 const { pwdValidator, pwdPromptValidator } = usePasswordRule()
 const { sys_normal_disable, sys_user_sex } = useDict("sys_normal_disable", "sys_user_sex")
+
+const deptTreeRef = ref<DeptTreeInstance>()
+const userRef = ref<FormInstance>()
+const userViewRef = ref<InstanceType<typeof UserViewDrawer>>()
+const importUserRef = ref<InstanceType<typeof ExcelImportDialog>>()
 
 const userList = ref<SysUser[]>([])
 const open = ref<boolean>(false)
@@ -212,8 +227,8 @@ const dateRange = ref<string[]>([])
 const deptOptions = ref<TreeSelect[] | undefined>(undefined)
 const enabledDeptOptions = ref<TreeSelect[] | undefined>(undefined)
 const initPassword = ref<string | undefined>(undefined)
-const postOptions = ref<SysPost[]>([])
-const roleOptions = ref<SysRole[]>([])
+const postOptions = ref<PostOption[]>([])
+const roleOptions = ref<RoleOption[]>([])
 // 列显隐信息
 const columns = ref<Record<string, TableShowColumns>>({
   userId: { label: '用户编号', visible: true },
@@ -224,6 +239,9 @@ const columns = ref<Record<string, TableShowColumns>>({
   status: { label: '状态', visible: true },
   createTime: { label: '创建时间', visible: true }
 })
+
+// 部门树选择器的节点字段映射（保留原有的 value 字段，运行时行为不变）
+const deptTreeProps: TreeOptionProps & { value: string } = { value: 'id', label: 'label', children: 'children' }
 
 const data = reactive({
   form: {} as SysUser,
@@ -240,7 +258,7 @@ const data = reactive({
     nickName: [{ required: true, message: "用户昵称不能为空", trigger: "blur" }],
     email: [{ type: "email", message: "请输入正确的邮箱地址", trigger: ["blur", "change"] }],
     phonenumber: [{ pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: "请输入正确的手机号码", trigger: "blur" }]
-  }
+  } as FormRules
 })
 
 const { queryParams, form, rules } = toRefs(data)
@@ -258,8 +276,9 @@ function getList() {
 /** 查询部门下拉树结构 */
 function getDeptTree() {
   deptTreeSelect().then(response => {
-    deptOptions.value = response.data
-    enabledDeptOptions.value = filterDisabledDept(JSON.parse(JSON.stringify(response.data)))
+    const deptTree = response.data || []
+    deptOptions.value = deptTree
+    enabledDeptOptions.value = filterDisabledDept(JSON.parse(JSON.stringify(deptTree)))
   })
 }
 
@@ -293,7 +312,7 @@ function resetQuery() {
   dateRange.value = []
   proxy.resetForm("queryRef")
   queryParams.value.deptId = undefined
-  proxy.$refs.deptTreeRef.setCurrentKey(null)
+  deptTreeRef.value?.setCurrentKey(null)
   handleQuery()
 }
 
@@ -353,7 +372,8 @@ function handleResetPwd(row: SysUser) {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     closeOnClickModal: false,
-    inputValidator: pwdPromptValidator
+    // MessageBoxInputValidator 要求返回 boolean | string，而校验函数在校验通过时返回 undefined（运行时等价于通过）
+    inputValidator: (value: string) => pwdPromptValidator(value) ?? true
   }).then(({ value }: { value: string }) => { 
     resetUserPwd(row.userId!, value).then(() => {
       proxy.$modal.msgSuccess("修改成功，新密码是：" + value)
@@ -370,12 +390,12 @@ function handleSelectionChange(selection: SysUser[]) {
 
 /** 详情按钮操作 */
 function handleViewData(row: SysUser) {
-  proxy.$refs["userViewRef"].open(row.userId)
+  userViewRef.value?.open(row.userId!)
 }
 
 /** 导入按钮操作 */
 function handleImport() {
-  proxy.$refs["importUserRef"].open()
+  importUserRef.value?.open()
 }
 
 /** 重置操作表单 */
@@ -407,8 +427,8 @@ function cancel() {
 function handleAdd() {
   reset()
   getUser().then(response => {
-    postOptions.value = response.posts
-    roleOptions.value = response.roles
+    postOptions.value = response.posts as PostOption[]
+    roleOptions.value = response.roles as RoleOption[]
     open.value = true
     title.value = "添加用户"
     form.value.password = initPassword.value
@@ -421,8 +441,8 @@ function handleUpdate(row?: SysUser) {
   const userId = row?.userId || ids.value[0]
   getUser(userId).then(response => {
     form.value = response.data!
-    postOptions.value = response.posts
-    roleOptions.value = response.roles
+    postOptions.value = response.posts as PostOption[]
+    roleOptions.value = response.roles as RoleOption[]
     form.value.postIds = response.postIds
     form.value.roleIds = response.roleIds
     open.value = true
@@ -433,7 +453,7 @@ function handleUpdate(row?: SysUser) {
 
 /** 提交按钮 */
 function submitForm() {
-  proxy.$refs["userRef"].validate((valid: boolean) => {
+  userRef.value?.validate((valid: boolean) => {
     if (valid) {
       if (form.value.userId != undefined) {
         updateUser(form.value).then(() => {

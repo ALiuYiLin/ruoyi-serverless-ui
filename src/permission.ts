@@ -1,4 +1,5 @@
 import router from './router'
+import type { RouteRecordRaw } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
@@ -9,6 +10,7 @@ import useUserStore from '@/store/modules/user'
 import useLockStore from '@/store/modules/lock'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
+import type { AppRouteRecord } from '@/types'
 
 NProgress.configure({ showSpinner: false })
 
@@ -45,17 +47,18 @@ router.beforeEach(async (to, from) => {
         await useUserStore().getInfo()
         isRelogin.show = false
         // 根据roles权限生成可访问的路由
-        const accessRoutes = await usePermissionStore().generateRoutes()
-        accessRoutes.forEach((route: any) => {
+        const accessRoutes: AppRouteRecord[] = await usePermissionStore().generateRoutes()
+        accessRoutes.forEach((route) => {
           if (!isHttp(route.path)) {
-            router.addRoute(route)
+            // AppRouteRecord 含若依扩展字段，与 vue-router 的路由联合类型不兼容，边界处断言
+            router.addRoute(route as unknown as RouteRecordRaw)
           }
         })
         // 重新导航到目标路由，确保动态路由已注册
         return { ...to, replace: true }
       } catch (err) {
         await useUserStore().logOut()
-        ElMessage.error(err)
+        ElMessage.error(err instanceof Error ? err.message : String(err))
         return { path: '/' }
       }
     }
