@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Plus } from "@lucide/vue";
 import Flex from "@/components/Flex/Flex.vue";
 import Button from "@/components/ui/button/Button.vue";
 </script>
@@ -13,7 +14,10 @@ import Button from "@/components/ui/button/Button.vue";
     </Flex>
     <Flex direction="column-reverse">
       <Flex :gap="10">
-        <Button variant="outline" radius="md">新增</Button>
+        <Button color="primary"  radius="md">
+          <Plus />
+          新增
+        </Button>
         <!-- <Button variant="outline" radius="md">导入</Button> -->
         <!-- <Button variant="outline" radius="md">导出</Button> -->
       </Flex>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useElementSize, useResizeObserver } from '@vueuse/core'
-import { ChevronLeftIcon, ChevronRightIcon } from '@lucide/vue'
+import { ChevronLeftIcon, ChevronRightIcon, Download, Upload } from '@lucide/vue'
 
 import Flex from '@/components/Flex/Flex.vue'
 import { Button } from '@/components/ui/button'
@@ -23,39 +23,39 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import Card from '@/components/ui/card/Card.vue'
+import type { SysUser } from '@/types'
 
-interface UserRow {
-  id: number
-  userName: string
-  phonenumber: string
-  status: '0' | '1'
-  createTime: string
-}
+const props = defineProps<{
+  /** 当前页数据 */
+  rows: SysUser[]
+  /** 总记录数 */
+  total: number
+  /** 当前页 */
+  page: number
+  /** 每页条数 */
+  pageSize: number
+  /** 加载中 */
+  loading?: boolean
+}>()
 
-/** 本地演示数据，后续替换为接口数据 */
-const rows = ref<UserRow[]>(
-  Array.from({ length: 23 }, (_, index): UserRow => ({
-    id: index + 1,
-    userName: `用户${index + 1}`,
-    phonenumber: `1380000${String(index + 1).padStart(4, '0')}`,
-    status: index % 4 === 0 ? '1' : '0',
-    createTime: `2026-11-${String((index % 28) + 1).padStart(2, '0')}`,
-  }))
-)
-
-const page = ref(1)
+const emit = defineEmits<{
+  (e: 'update:page', page: number): void
+  (e: 'update:pageSize', pageSize: number): void
+}>()
 
 /** 表格可视区域，用于按“剩余高度 / 行高”动态计算每页条数 */
 const tableAreaRef = ref<HTMLElement>()
 const { height: tableAreaHeight } = useElementSize(tableAreaRef)
 const tableHeaderHeight = ref(0)
 const tableRowHeight = ref(40)
+/** 是否已经量到真实数据行的高度（避免用“加载中/暂无数据”占位行计算） */
+const hasMeasuredRow = ref(false)
 
-const pageSize = computed(() => {
+const fittedPageSize = computed(() => {
   const available = tableAreaHeight.value - tableHeaderHeight.value
-  // 首帧或高度未测量到时先用默认值，测量完成后自动修正
-  if (available <= 0 || !tableRowHeight.value) {
-    return 10
+  // 首帧、未拿到真实数据行时，沿用父组件传入的条数
+  if (!hasMeasuredRow.value || available <= 0 || !tableRowHeight.value) {
+    return props.pageSize
   }
   return Math.max(1, Math.floor(available / tableRowHeight.value))
 })
@@ -66,34 +66,48 @@ function measureTableMetrics() {
     return
   }
   const thead = element.querySelector('thead')
-  const firstRow = element.querySelector('tbody tr')
   if (thead) {
     tableHeaderHeight.value = thead.getBoundingClientRect().height
   }
-  if (firstRow) {
-    tableRowHeight.value = firstRow.getBoundingClientRect().height
+  const firstRow = element.querySelector('tbody tr[data-row]')
+  const rowHeight = firstRow?.getBoundingClientRect().height ?? 0
+  if (rowHeight > 0) {
+    tableRowHeight.value = rowHeight
+    hasMeasuredRow.value = true
   }
 }
 
 useResizeObserver(tableAreaRef, measureTableMetrics)
 
-const total = computed(() => rows.value.length)
-const currentRows = computed(() =>
-  rows.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
-)
+/** 数据变化或加载状态切换后，重新测量行高 */
+watch([() => props.rows, () => props.loading], () => nextTick(measureTableMetrics))
 
-/** pageSize 变小后，避免当前页超出最大页数 */
-watch(pageSize, size => {
-  const maxPage = Math.max(1, Math.ceil(total.value / size))
-  if (page.value > maxPage) {
-    page.value = maxPage
+/** 测量出的每页条数变化时，防抖后通知父组件重新请求，避免测量抖动造成连续请求 */
+let emitSizeTimer: ReturnType<typeof setTimeout> | undefined
+watch(fittedPageSize, size => {
+  if (props.loading || !hasMeasuredRow.value || size === props.pageSize) {
+    return
   }
+  if (emitSizeTimer) {
+    clearTimeout(emitSizeTimer)
+  }
+  emitSizeTimer = setTimeout(() => {
+    if (size !== props.pageSize) {
+      emit('update:pageSize', size)
+    }
+  }, 250)
 })
 
-/** 已选中的行 id */
+const currentPage = computed({
+  get: () => props.page,
+  set: (value: number) => emit('update:page', value),
+})
+
+/** 已选中的行 userId */
 const selectedIds = ref<number[]>([])
 const selectedCount = computed(() => selectedIds.value.length)
-const currentPageIds = computed(() => currentRows.value.map(row => row.id))
+const rowId = (row: SysUser) => row.userId ?? 0
+const currentPageIds = computed(() => props.rows.map(row => rowId(row)))
 const allPageSelected = computed(
   () => currentPageIds.value.length > 0 && currentPageIds.value.every(id => selectedIds.value.includes(id))
 )
@@ -122,8 +136,18 @@ function toggleRow(id: number, value: boolean | 'indeterminate') {
   }
 }
 
-function statusLabel(status: UserRow['status']): string {
-  return status === '0' ? '正常' : '停用'
+function userLabel(row: SysUser): string {
+  return row.nickName || row.userName || ''
+}
+
+function statusLabel(status?: '0' | '1'): string {
+  if (status === '0') {
+    return '正常'
+  }
+  if (status === '1') {
+    return '停用'
+  }
+  return ''
 }
 </script>
 
@@ -133,15 +157,21 @@ function statusLabel(status: UserRow['status']): string {
       <!-- 工具栏 -->
       <Flex direction="column" class="min-h-0 flex-1">
         <Flex class="table-toolbar shrink-0" :padding="14" align="center" justify="space-between">
-          <Flex  align="center"  :gap="5">
+          <Flex align="center" :gap="5">
             <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
             <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >批量删除</Button>
             <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button>
           </Flex>
-          <Flex align="center"  :gap="5">
-            <Button size="sm" radius="md" :disabled="selectedCount === 0" >导入</Button>
-            <Button size="sm" radius="md" :disabled="selectedCount === 0" >导出</Button>
-          </Flex>      
+          <Flex align="center" :gap="5">
+            <Button size="sm" radius="md" :disabled="selectedCount === 0" >
+              <Upload />
+              导入
+            </Button>
+            <Button size="sm" radius="md" :disabled="selectedCount === 0" >
+              <Download />
+              导出
+            </Button>
+          </Flex>
         </Flex>
         <!-- 表格 -->
         <div ref="tableAreaRef" class="min-h-0 flex-1 overflow-auto">
@@ -162,34 +192,42 @@ function statusLabel(status: UserRow['status']): string {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="row in currentRows" :key="row.id">
-              <TableCell>
-                <Checkbox
-                  :model-value="selectedIds.includes(row.id)"
-                  @update:model-value="value => toggleRow(row.id, value)"
-                />
-              </TableCell>
-              <TableCell>{{ row.userName }}</TableCell>
-              <TableCell>{{ row.phonenumber }}</TableCell>
-              <TableCell>{{ statusLabel(row.status) }}</TableCell>
-              <TableCell>{{ row.createTime }}</TableCell>
-              <TableCell>
-                <Flex :gap="4">
-                  <Button variant="ghost" size="sm" radius="md">修改</Button>
-                  <Button color="danger" variant="ghost" size="sm" radius="md">删除</Button>
-                </Flex>
-              </TableCell>
+            <TableRow v-if="loading && rows.length === 0">
+              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
             </TableRow>
+            <TableRow v-else-if="rows.length === 0">
+              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">暂无数据</TableCell>
+            </TableRow>
+            <template v-else>
+              <TableRow v-for="row in rows" :key="rowId(row)" data-row>
+                <TableCell>
+                  <Checkbox
+                    :model-value="selectedIds.includes(rowId(row))"
+                    @update:model-value="value => toggleRow(rowId(row), value)"
+                  />
+                </TableCell>
+                <TableCell>{{ userLabel(row) }}</TableCell>
+                <TableCell>{{ row.phonenumber }}</TableCell>
+                <TableCell>{{ statusLabel(row.status) }}</TableCell>
+                <TableCell>{{ row.createTime }}</TableCell>
+                <TableCell>
+                  <Flex :gap="4">
+                    <Button variant="ghost" size="sm" radius="md">修改</Button>
+                    <Button color="danger" variant="ghost" size="sm" radius="md">删除</Button>
+                  </Flex>
+                </TableCell>
+              </TableRow>
+            </template>
           </TableBody>
           </Table>
         </div>
       </Flex>
-  
+
       <!-- 分页 -->
       <Flex class="shrink-0 border-t-2" align="center" justify="space-between" :gap="8" :padding-x="14" :padding-y="9" >
         <span class="text-sm text-muted-foreground whitespace-nowrap">共 {{ total }} 条</span>
         <Pagination
-          v-model:page="page"
+          v-model:page="currentPage"
           :items-per-page="pageSize"
           :total="total"
           :sibling-count="1"
