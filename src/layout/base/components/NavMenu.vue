@@ -33,9 +33,8 @@ import { SidebarMenu } from "@/components/ui/sidebar"
 import { isExternal } from "@/utils/validate"
 import { getNormalPath } from "@/utils/ruoyi"
 import type { AppRouteRecord } from "@/types"
-import NavProjectsItem from "./NavProjectsItem.vue"
-
-/** 侧边栏菜单节点（过滤、路径补全后交给 NavProjectsItem 递归渲染） */
+import NavMenuItem from "./NavMenuItem.vue"
+/** 侧边栏菜单节点（过滤、路径补全后交给 NavsidebarRoutersItem 递归渲染） */
 interface SidebarMenuNode {
   key: string
   title: string
@@ -45,7 +44,7 @@ interface SidebarMenuNode {
 }
 
 const props = defineProps<{
-  projects: AppRouteRecord[]
+  sidebarRouters: AppRouteRecord[]
 }>()
 
 /**
@@ -138,11 +137,11 @@ function toMenuNodes(routes: AppRouteRecord[], basePath = ""): SidebarMenuNode[]
   return nodes
 }
 
-const menus = computed(() => toMenuNodes(props.projects))
+const menus = computed(() => toMenuNodes(props.sidebarRouters))
 </script>
 
 <template>
   <SidebarMenu>
-    <NavProjectsItem v-for="menu in menus" :key="menu.key" :item="menu" />
+    <NavMenuItem v-for="menu in menus" :key="menu.key" :item="menu" />
   </SidebarMenu>
 </template>
