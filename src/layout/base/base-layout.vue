@@ -1,10 +1,3 @@
-<script lang="ts">
-export const description
-  = "A sidebar that collapses to icons."
-export const iframeHeight = "800px"
-export const containerClass = "w-full h-full"
-</script>
-
 <script setup lang="ts">
 import AppSidebar from "@/layout/base/components/AppSidebar.vue"
 import {
@@ -57,8 +50,14 @@ import {
         </div>
         <div class="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
       </div> -->
-      <RouterView></RouterView>
-      
+      <div class="main-content">
+        <RouterView></RouterView>
+      </div>
     </SidebarInset>
   </SidebarProvider>
 </template>
+<style scoped>
+.main-content{
+  padding: 18px 24px;
+}
+</style>

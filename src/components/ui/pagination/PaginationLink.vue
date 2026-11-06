@@ -23,6 +23,7 @@ const props = withDefaults(defineProps<{
     :aria-current="isActive ? 'page' : undefined"
     :class="cn(
       buttonVariants({
+        color: 'default',
         variant: isActive ? 'outline' : 'ghost',
         size,
       }),

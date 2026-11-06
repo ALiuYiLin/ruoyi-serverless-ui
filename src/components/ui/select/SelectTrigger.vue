@@ -16,7 +16,7 @@ const props = withDefaults(
     /** 圆角配置：default 保持默认圆角，none/sm/md/lg/full 覆盖 */
     radius?: Radius
   }>(),
-  { size: 'default', radius: 'default' },
+  { size: 'default', radius: 'sm' },
 )
 
 const delegatedProps = reactiveOmit(props, 'class', 'size', 'radius')

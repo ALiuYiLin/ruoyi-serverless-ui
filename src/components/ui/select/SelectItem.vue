@@ -14,11 +14,13 @@ import {
 
 import { radiusClass, type Radius } from '../radius'
 
-const props = defineProps<SelectItemProps & {
+const props = withDefaults(defineProps<SelectItemProps & {
   class?: HTMLAttributes['class']
   /** 圆角配置：default 保持默认圆角，none/sm/md/lg/full 覆盖 */
   radius?: Radius
-}>()
+}>(), {
+  radius: 'sm',
+})
 
 const delegatedProps = reactiveOmit(props, 'class', 'radius')
 

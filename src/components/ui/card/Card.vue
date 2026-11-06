@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<{
   padding?: Padding
 }>(), {
   size: 'default',
-  radius: 'default',
+  radius: 'sm',
   padding: 'default',
 })
 </script>

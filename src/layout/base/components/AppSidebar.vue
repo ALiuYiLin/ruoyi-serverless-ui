@@ -53,7 +53,7 @@ const data = {
 </script>
 
 <template>
-  <Sidebar v-bind="props">
+  <Sidebar v-bind="props" class="app-sidebar">
     <SidebarHeader>
       <TeamSwitcher :teams="data.teams" />
     </SidebarHeader>
@@ -63,3 +63,4 @@ const data = {
     <SidebarRail />
   </Sidebar>
 </template>
+

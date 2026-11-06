@@ -26,7 +26,7 @@ const props = withDefaults(
   {
     position: 'item-aligned',
     align: 'center',
-    radius: 'default',
+    radius: 'sm',
   },
 )
 const emits = defineEmits<SelectContentEmits>()

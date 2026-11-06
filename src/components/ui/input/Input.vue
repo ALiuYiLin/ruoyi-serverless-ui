@@ -14,7 +14,7 @@ const props = withDefaults(
     class?: HTMLAttributes['class']
   }>(),
   {
-    radius: 'default',
+    radius: 'sm',
   }
 )
 
