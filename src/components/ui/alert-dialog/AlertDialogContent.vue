@@ -10,6 +10,8 @@ import {
   useForwardPropsEmits,
 } from 'reka-ui'
 
+import { radiusClass, type Radius } from '../radius'
+
 defineOptions({
   inheritAttrs: false,
 })
@@ -18,14 +20,17 @@ const props = withDefaults(
   defineProps<AlertDialogContentProps & {
     class?: HTMLAttributes['class']
     size?: 'default' | 'sm'
+    /** 圆角配置：默认 sm */
+    radius?: Radius
   }>(),
   {
     size: 'default',
+    radius: 'sm',
   },
 )
 const emits = defineEmits<AlertDialogContentEmits>()
 
-const delegatedProps = reactiveOmit(props, 'class', 'size')
+const delegatedProps = reactiveOmit(props, 'class', 'size', 'radius')
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
@@ -43,6 +48,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
       :class="
         cn(
           'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 bg-popover text-popover-foreground ring-foreground/5 dark:ring-foreground/10 gap-6 rounded-4xl p-6 shadow-xl ring-1 duration-100 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-md group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 outline-none',
+          radiusClass(props.radius),
           props.class,
         )
       "

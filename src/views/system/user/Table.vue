@@ -326,16 +326,16 @@ async function handleConfirmDelete() {
                 <TableCell v-if="columnVisible.createTime" class="truncate">{{ row.createTime }}</TableCell>
                 <TableCell>
                   <Flex v-if="row.userId !== 1" :gap="2">
-                    <Button variant="ghost" size="icon-xs" radius="md" title="修改" @click="userStore.openEditForm(row)">
+                    <Button variant="ghost" size="icon-sm" radius="md" title="修改" @click="userStore.openEditForm(row)">
                       <Pencil />
                     </Button>
-                    <Button variant="ghost" size="icon-xs" radius="md" title="删除" @click="userStore.openDeleteConfirm([rowId(row)])">
+                    <Button variant="ghost" size="icon-sm" radius="md" title="删除" @click="userStore.openDeleteConfirm([rowId(row)])">
                       <Trash2 />
                     </Button>
-                    <Button variant="ghost" size="icon-xs" radius="md" title="重置密码" @click="userStore.openResetPwd(row)">
+                    <Button variant="ghost" size="icon-sm" radius="md" title="重置密码" @click="userStore.openResetPwd(row)">
                       <KeyRound />
                     </Button>
-                    <Button variant="ghost" size="icon-xs" radius="md" title="分配角色" @click="userStore.openAuthRole(row)">
+                    <Button variant="ghost" size="icon-sm" radius="md" title="分配角色" @click="userStore.openAuthRole(row)">
                       <ShieldCheck />
                     </Button>
                   </Flex>
