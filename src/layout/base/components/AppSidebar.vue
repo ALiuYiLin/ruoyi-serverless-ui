@@ -13,61 +13,26 @@ import {
   Settings2,
   SquareTerminal,
 } from "@lucide/vue"
-import NavMain from "@/layout/base/components/NavMain.vue"
 import NavProjects from "@/layout/base/components/NavProjects.vue"
-import NavUser from "@/layout/base/components/NavUser.vue"
 import TeamSwitcher from "@/layout/base/components/TeamSwitcher.vue"
 
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
 
 
-import Logo from './Logo.vue'
-import SidebarItem from './SidebarItem.vue'
-import variables from '@/assets/styles/variables.module.scss'
-import useAppStore from '@/store/modules/app'
-import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
 
-const route = useRoute()
-const appStore = useAppStore()
-const settingsStore = useSettingsStore()
 const permissionStore = usePermissionStore()
 
 const sidebarRouters = computed(() => permissionStore.sidebarRouters)
-const showLogo = computed(() => settingsStore.sidebarLogo)
-const sideTheme = computed(() => settingsStore.sideTheme)
-const theme = computed(() => settingsStore.theme)
-const isCollapse = computed(() => !appStore.sidebar.opened)
 
-// 获取菜单背景色
-const getMenuBackground = computed(() => {
-  if (settingsStore.isDark) {
-    return 'var(--sidebar-bg)'
-  }
-  return sideTheme.value === 'theme-dark' ? variables.menuBg : variables.menuLightBg
-})
 
-// 获取菜单文字颜色
-const getMenuTextColor = computed(() => {
-  if (settingsStore.isDark) {
-    return 'var(--sidebar-text)'
-  }
-  return sideTheme.value === 'theme-dark' ? variables.menuText : variables.menuLightText
-})
 
-const activeMenu = computed(() => {
-  const { meta, path } = route
-  if (meta.activeMenu) {
-    return meta.activeMenu
-  }
-  return path
-})
+
 
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -211,12 +176,8 @@ const data = {
       <TeamSwitcher :teams="data.teams" />
     </SidebarHeader>
     <SidebarContent>
-      <NavMain :items="data.navMain" />
-      <NavProjects :projects="data.projects" />
+      <NavProjects :projects="sidebarRouters" />
     </SidebarContent>
-    <SidebarFooter>
-      <NavUser :user="data.user" />
-    </SidebarFooter>
     <SidebarRail />
   </Sidebar>
 </template>
