@@ -100,6 +100,23 @@ function handleReset() {
         </Flex>
       </FormField>
 
+
+            <!-- 部门 -->
+      <FormField name="deptId">
+        <Flex :gap="8">
+          <Label class="whitespace-nowrap">部门</Label>
+          <div class="w-56">
+            <DeptTreeSelect
+              :model-value="filters.deptId"
+              :options="userStore.deptOptions"
+              placeholder="请选择部门"
+              @update:model-value="value => (filters.deptId = value)"
+            />
+          </div>
+        </Flex>
+      </FormField>
+      
+
       <!-- 状态 -->
       <FormField name="status">
         <Flex :gap="8">
@@ -129,20 +146,7 @@ function handleReset() {
         </Flex>
       </FormField>
 
-      <!-- 部门 -->
-      <FormField name="deptId">
-        <Flex :gap="8">
-          <Label class="whitespace-nowrap">部门</Label>
-          <div class="w-56">
-            <DeptTreeSelect
-              :model-value="filters.deptId"
-              :options="userStore.deptOptions"
-              placeholder="请选择部门"
-              @update:model-value="value => (filters.deptId = value)"
-            />
-          </div>
-        </Flex>
-      </FormField>
+
 
       <!-- 操作按钮 -->
       <Flex :gap="8" class="ml-auto">
