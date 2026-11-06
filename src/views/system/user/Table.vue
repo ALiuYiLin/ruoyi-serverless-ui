@@ -132,12 +132,17 @@ function statusLabel(status: UserRow['status']): string {
     <Flex direction="column" class="h-full" justify="space-between">
       <!-- 工具栏 -->
       <Flex direction="column" class="min-h-0 flex-1">
-        <Flex class="table-toolbar shrink-0" align="center" :padding="14" :gap="5">
-          <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
-          <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >批量删除</Button>
-          <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button>
+        <Flex class="table-toolbar shrink-0" :padding="14" align="center" justify="space-between">
+          <Flex  align="center"  :gap="5">
+            <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
+            <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >批量删除</Button>
+            <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button>
+          </Flex>
+          <Flex align="center"  :gap="5">
+            <Button size="sm" radius="md" :disabled="selectedCount === 0" >导入</Button>
+            <Button size="sm" radius="md" :disabled="selectedCount === 0" >导出</Button>
+          </Flex>      
         </Flex>
-    
         <!-- 表格 -->
         <div ref="tableAreaRef" class="min-h-0 flex-1 overflow-auto">
           <Table>
