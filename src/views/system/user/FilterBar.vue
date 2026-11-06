@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { RotateCcw, Search } from '@lucide/vue'
+import { Loader2, RotateCcw, Search } from '@lucide/vue'
 
 import Flex from '@/components/Flex/Flex.vue'
 import { Button } from '@/components/ui/button'
@@ -16,14 +16,11 @@ import {
 } from '@/components/ui/select'
 import Card from '@/components/ui/card/Card.vue'
 
-import type { UserFilter } from './types'
+import useSystemUserStore, { type UserListFilter } from '@/store/system/user'
 
-const emit = defineEmits<{
-  (e: 'search', filter: UserFilter): void
-  (e: 'reset'): void
-}>()
+const userStore = useSystemUserStore()
 
-const filters = reactive<UserFilter>({
+const filters = reactive<UserListFilter>({
   userName: '',
   phonenumber: '',
   status: undefined,
@@ -32,16 +29,23 @@ const filters = reactive<UserFilter>({
 })
 
 function handleSearch() {
-  emit('search', { ...filters })
+  // loading 期间不重复触发，防止连续点击 / 回车重复请求
+  if (userStore.loading) {
+    return
+  }
+  userStore.search({ ...filters })
 }
 
 function handleReset() {
+  if (userStore.loading) {
+    return
+  }
   filters.userName = ''
   filters.phonenumber = ''
   filters.status = undefined
   filters.beginTime = ''
   filters.endTime = ''
-  emit('reset')
+  userStore.resetQuery()
 }
 </script>
 
@@ -95,11 +99,12 @@ function handleReset() {
 
       <!-- 操作按钮 -->
       <Flex :gap="8" class="ml-auto">
-        <Button size="lg" type="submit" color="primary" radius="md">
-          <Search />
-          查询
+        <Button size="lg" type="submit" color="primary" radius="md" :disabled="userStore.loading">
+          <Loader2 v-if="userStore.loading" class="animate-spin" />
+          <Search v-else />
+          {{ userStore.loading ? '查询中...' : '查询' }}
         </Button>
-        <Button size="lg" type="button" variant="outline" radius="md" @click="handleReset">
+        <Button size="lg" type="button" variant="outline" radius="md" :disabled="userStore.loading" @click="handleReset">
           <RotateCcw />
           重置
         </Button>

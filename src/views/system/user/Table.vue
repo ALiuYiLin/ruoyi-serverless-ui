@@ -22,26 +22,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
 import Card from '@/components/ui/card/Card.vue'
 import type { SysUser } from '@/types'
+import useSystemUserStore from '@/store/system/user'
 
-const props = defineProps<{
-  /** 当前页数据 */
-  rows: SysUser[]
-  /** 总记录数 */
-  total: number
-  /** 当前页 */
-  page: number
-  /** 每页条数 */
-  pageSize: number
-  /** 加载中 */
-  loading?: boolean
-}>()
-
-const emit = defineEmits<{
-  (e: 'update:page', page: number): void
-  (e: 'update:pageSize', pageSize: number): void
-}>()
+const userStore = useSystemUserStore()
 
 /** 表格可视区域，用于按“剩余高度 / 行高”动态计算每页条数 */
 const tableAreaRef = ref<HTMLElement>()
@@ -53,11 +39,20 @@ const hasMeasuredRow = ref(false)
 
 const fittedPageSize = computed(() => {
   const available = tableAreaHeight.value - tableHeaderHeight.value
-  // 首帧、未拿到真实数据行时，沿用父组件传入的条数
+  // 首帧、未拿到真实数据行时，沿用 store 中的条数
   if (!hasMeasuredRow.value || available <= 0 || !tableRowHeight.value) {
-    return props.pageSize
+    return userStore.queryParams.pageSize ?? 10
   }
   return Math.max(1, Math.floor(available / tableRowHeight.value))
+})
+
+/** 首屏加载时骨架屏的行数（按可视区域大致填充） */
+const skeletonRowCount = computed(() => {
+  const available = tableAreaHeight.value - tableHeaderHeight.value
+  if (available > 0) {
+    return Math.max(3, Math.floor(available / (tableRowHeight.value || 40)))
+  }
+  return 8
 })
 
 function measureTableMetrics() {
@@ -80,34 +75,34 @@ function measureTableMetrics() {
 useResizeObserver(tableAreaRef, measureTableMetrics)
 
 /** 数据变化或加载状态切换后，重新测量行高 */
-watch([() => props.rows, () => props.loading], () => nextTick(measureTableMetrics))
+watch([() => userStore.userList, () => userStore.loading], () => nextTick(measureTableMetrics))
 
-/** 测量出的每页条数变化时，防抖后通知父组件重新请求，避免测量抖动造成连续请求 */
+/** 测量出的每页条数变化时，防抖后写入 store（由 store 决定是否重新请求） */
 let emitSizeTimer: ReturnType<typeof setTimeout> | undefined
 watch(fittedPageSize, size => {
-  if (props.loading || !hasMeasuredRow.value || size === props.pageSize) {
+  if (userStore.loading || !hasMeasuredRow.value || size === (userStore.queryParams.pageSize ?? 10)) {
     return
   }
   if (emitSizeTimer) {
     clearTimeout(emitSizeTimer)
   }
   emitSizeTimer = setTimeout(() => {
-    if (size !== props.pageSize) {
-      emit('update:pageSize', size)
+    if (size !== (userStore.queryParams.pageSize ?? 10)) {
+      userStore.setPageSize(size)
     }
   }, 250)
 })
 
 const currentPage = computed({
-  get: () => props.page,
-  set: (value: number) => emit('update:page', value),
+  get: () => userStore.queryParams.pageNum ?? 1,
+  set: (value: number) => userStore.setPage(value),
 })
 
 /** 已选中的行 userId */
 const selectedIds = ref<number[]>([])
 const selectedCount = computed(() => selectedIds.value.length)
 const rowId = (row: SysUser) => row.userId ?? 0
-const currentPageIds = computed(() => props.rows.map(row => rowId(row)))
+const currentPageIds = computed(() => userStore.userList.map(row => rowId(row)))
 const allPageSelected = computed(
   () => currentPageIds.value.length > 0 && currentPageIds.value.every(id => selectedIds.value.includes(id))
 )
@@ -192,14 +187,22 @@ function statusLabel(status?: '0' | '1'): string {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-if="loading && rows.length === 0">
-              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
-            </TableRow>
-            <TableRow v-else-if="rows.length === 0">
+            <!-- 加载中：始终用 Skeleton 构建列表骨架（翻页/筛选/查询同样展示） -->
+            <template v-if="userStore.loading">
+              <TableRow v-for="index in skeletonRowCount" :key="`skeleton-${index}`">
+                <TableCell><Skeleton class="size-4 rounded-sm" /></TableCell>
+                <TableCell><Skeleton class="h-4 w-24" /></TableCell>
+                <TableCell><Skeleton class="h-4 w-28" /></TableCell>
+                <TableCell><Skeleton class="h-4 w-12" /></TableCell>
+                <TableCell><Skeleton class="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton class="h-4 w-20" /></TableCell>
+              </TableRow>
+            </template>
+            <TableRow v-else-if="userStore.userList.length === 0">
               <TableCell colspan="6" class="h-24 text-center text-muted-foreground">暂无数据</TableCell>
             </TableRow>
             <template v-else>
-              <TableRow v-for="row in rows" :key="rowId(row)" data-row>
+              <TableRow v-for="row in userStore.userList" :key="rowId(row)" data-row>
                 <TableCell>
                   <Checkbox
                     :model-value="selectedIds.includes(rowId(row))"
@@ -225,11 +228,11 @@ function statusLabel(status?: '0' | '1'): string {
 
       <!-- 分页 -->
       <Flex class="shrink-0 border-t-2" align="center" justify="space-between" :gap="8" :padding-x="14" :padding-y="9" >
-        <span class="text-sm text-muted-foreground whitespace-nowrap">共 {{ total }} 条</span>
+        <span class="text-sm text-muted-foreground whitespace-nowrap">共 {{ userStore.total }} 条</span>
         <Pagination
           v-model:page="currentPage"
-          :items-per-page="pageSize"
-          :total="total"
+          :items-per-page="userStore.queryParams.pageSize ?? 10"
+          :total="userStore.total"
           :sibling-count="1"
           show-edges
           class="m-0 w-fit"
@@ -241,7 +244,7 @@ function statusLabel(status?: '0' | '1'): string {
             </PaginationPrevious>
             <template v-for="(item, index) in items" :key="index">
               <PaginationEllipsis v-if="item.type === 'ellipsis'" />
-              <PaginationItem v-else :value="item.value" :is-active="item.value === page">
+              <PaginationItem v-else :value="item.value" :is-active="item.value === (userStore.queryParams.pageNum ?? 1)">
                 {{ item.value }}
               </PaginationItem>
             </template>
