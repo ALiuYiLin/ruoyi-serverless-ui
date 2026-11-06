@@ -9,21 +9,26 @@ import { cn } from 'cn'
 import { PaginationNext, useForwardProps } from 'reka-ui'
 import { buttonVariants } from '@/components/ui/button'
 
+import { radiusClass, type Radius } from '../radius'
+
 const props = withDefaults(defineProps<PaginationNextProps & {
   size?: ButtonVariants['size']
+  /** 圆角配置：默认 sm */
+  radius?: Radius
   class?: HTMLAttributes['class']
 }>(), {
   size: 'default',
+  radius: 'sm',
 })
 
-const delegatedProps = reactiveOmit(props, 'class', 'size')
+const delegatedProps = reactiveOmit(props, 'class', 'size', 'radius')
 const forwarded = useForwardProps(delegatedProps)
 </script>
 
 <template>
   <PaginationNext
     data-slot="pagination-next"
-    :class="cn(buttonVariants({ color: 'default', variant: 'ghost', size }), 'pr-2!', props.class)"
+    :class="cn(buttonVariants({ color: 'default', variant: 'ghost', size }), radiusClass(props.radius), 'pr-2!', props.class)"
     v-bind="forwarded"
   >
     <slot>

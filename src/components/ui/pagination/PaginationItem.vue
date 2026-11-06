@@ -7,15 +7,20 @@ import { cn } from 'cn'
 import { PaginationListItem } from 'reka-ui'
 import { buttonVariants } from '@/components/ui/button'
 
+import { radiusClass, type Radius } from '../radius'
+
 const props = withDefaults(defineProps<PaginationListItemProps & {
   size?: ButtonVariants['size']
+  /** 圆角配置：默认 sm */
+  radius?: Radius
   class?: HTMLAttributes['class']
   isActive?: boolean
 }>(), {
   size: 'icon',
+  radius: 'sm',
 })
 
-const delegatedProps = reactiveOmit(props, 'class', 'size', 'isActive')
+const delegatedProps = reactiveOmit(props, 'class', 'size', 'isActive', 'radius')
 </script>
 
 <template>
@@ -28,6 +33,7 @@ const delegatedProps = reactiveOmit(props, 'class', 'size', 'isActive')
         variant: isActive ? 'outline' : 'ghost',
         size,
       }),
+      radiusClass(props.radius),
       props.class)"
   >
     <slot />

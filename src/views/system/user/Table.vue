@@ -110,6 +110,7 @@ function statusLabel(status: UserRow['status']): string {
             <TableHead>手机号码</TableHead>
             <TableHead>状态</TableHead>
             <TableHead>创建时间</TableHead>
+            <TableHead>操作</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -124,19 +125,26 @@ function statusLabel(status: UserRow['status']): string {
             <TableCell>{{ row.phonenumber }}</TableCell>
             <TableCell>{{ statusLabel(row.status) }}</TableCell>
             <TableCell>{{ row.createTime }}</TableCell>
+            <TableCell>
+              <Flex :gap="4">
+                <Button variant="ghost" size="sm" radius="md">修改</Button>
+                <Button color="danger" variant="ghost" size="sm" radius="md">删除</Button>
+              </Flex>
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>
   
       <!-- 分页 -->
-      <Flex align="center" justify="space-between" :gap="8">
-        <span class="text-sm text-muted-foreground">共 {{ total }} 条</span>
+      <Flex class="border-t-2" align="center" justify="space-between" :gap="8" :padding-x="14" :padding-y="9" >
+        <span class="text-sm text-muted-foreground whitespace-nowrap">共 {{ total }} 条</span>
         <Pagination
           v-model:page="page"
           :items-per-page="pageSize"
           :total="total"
           :sibling-count="1"
           show-edges
+          class="m-0 w-fit"
         >
           <PaginationContent v-slot="{ items }">
             <PaginationPrevious>
