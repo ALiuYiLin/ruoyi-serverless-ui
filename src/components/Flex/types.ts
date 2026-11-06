@@ -15,3 +15,9 @@ export type FlexGap = 'small' | 'middle' | 'large' | number
 
 /** Flex 换行方式 */
 export type FlexWrap = boolean | 'nowrap' | 'wrap' | 'wrap-reverse'
+
+/** Flex 排列方向 */
+export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse'
+
+/** Flex 内边距：default 保持默认，none=0，sm/md/lg=16/24/32px，number=自定义像素 */
+export type FlexPadding = 'default' | 'none' | 'sm' | 'md' | 'lg' | number
