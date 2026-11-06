@@ -77,20 +77,6 @@ export const constantRoutes: AppRouteRecord[] = [
     component: () => import('@/views/lock.vue'),
     hidden: true,
     meta: { title: '锁定屏幕' }
-  },
-  {
-    path: '/user',
-    component: Layout,
-    hidden: true,
-    redirect: 'noredirect',
-    children: [
-      {
-        path: 'profile/:activeTab?',
-        component: () => import('@/views/system/user/profile/index.vue'),
-        name: 'Profile',
-        meta: { title: '个人中心', icon: 'user' }
-      }
-    ]
   }
 ]
 

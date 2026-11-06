@@ -184,7 +184,7 @@ async function handleConfirmDelete() {
           <Flex align="center" :gap="5">
             <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
             <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" @click="userStore.openDeleteConfirm(selectedIds)">批量删除</Button>
-            <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button>
+            <!-- <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button> -->
           </Flex>
           <Flex align="center" :gap="5">
             <Button size="sm" radius="md" :disabled="selectedCount === 0" >

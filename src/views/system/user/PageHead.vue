@@ -10,14 +10,14 @@ const userStore = useSystemUserStore();
 <template>
   <Flex justify="space-between" >
     <Flex direction="column" :gap="5">
-      <h1 class="page-title">耳机音频</h1>
+      <h1 class="page-title">用户管理</h1>
       <p class="page-subtitle">
-        <!-- 数码 3C / 耳机音频 · 共 96 件商品 · 最近更新于 2 小时前 -->
+        <!--  -->
       </p>
     </Flex>
     <Flex direction="column-reverse">
       <Flex :gap="10">
-        <Button color="primary" radius="md" @click="userStore.openAddForm()">
+        <Button color="primary" radius="md" @click="userStore.openAddForm()" size="lg">
           <Plus />
           新增
         </Button>
