@@ -1,6 +1,6 @@
 import { createWebHistory, createRouter } from 'vue-router'
 /* Layout */
-import Layout from '@/layout/index.vue'
+import Layout from '@/layout/base'
 
 /**
  * Note: 路由配置项
@@ -87,56 +87,6 @@ export const constantRoutes = [
         component: () => import('@/views/system/user/profile/index.vue'),
         name: 'Profile',
         meta: { title: '个人中心', icon: 'user' }
-      }
-    ]
-  },
-  {
-    // 侧边栏示例：全屏展示，不套用后台 Layout（重构选型预览用）
-    path: '/demo',
-    redirect: '/demo/sidebar-01',
-    meta: { title: '侧边栏示例', icon: 'component' },
-    children: [
-      {
-        path: 'sidebar-01',
-        component: () => import('@/demo/sidebar-01/page.vue'),
-        name: 'SidebarDemo01',
-        meta: { title: '01 基础侧边栏', demo: true }
-      },
-      {
-        path: 'sidebar-02',
-        component: () => import('@/demo/sidebar-02/page.vue'),
-        name: 'SidebarDemo02',
-        meta: { title: '02 可折叠分组', demo: true }
-      },
-      {
-        path: 'sidebar-03',
-        component: () => import('@/demo/sidebar-03/page.vue'),
-        name: 'SidebarDemo03',
-        meta: { title: '03 子菜单', demo: true }
-      },
-      {
-        path: 'sidebar-04',
-        component: () => import('@/demo/sidebar-04/page.vue'),
-        name: 'SidebarDemo04',
-        meta: { title: '04 浮动侧边栏', demo: true }
-      },
-      {
-        path: 'sidebar-05',
-        component: () => import('@/demo/sidebar-05/page.vue'),
-        name: 'SidebarDemo05',
-        meta: { title: '05 可折叠子菜单', demo: true }
-      },
-      {
-        path: 'sidebar-06',
-        component: () => import('@/demo/sidebar-06/page.vue'),
-        name: 'SidebarDemo06',
-        meta: { title: '06 下拉式子菜单', demo: true }
-      },
-      {
-        path: 'sidebar-07',
-        component: () => import('@/demo/sidebar-07/page.vue'),
-        name: 'SidebarDemo07',
-        meta: { title: '07 图标折叠侧边栏', demo: true }
       }
     ]
   }
