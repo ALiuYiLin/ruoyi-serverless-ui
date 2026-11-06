@@ -23,6 +23,7 @@
             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
+        <filter-bar></filter-bar>
 
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
@@ -194,6 +195,7 @@ import type { SysUser, UserQueryParams, UserFormDataResult } from '@/types/api/s
 import type { SysRole } from '@/types/api/system/role'
 import type { SysPost } from '@/types/api/system/post'
 import type { TreeSelect, TableShowColumns, AjaxResult } from '@/types/api/common'
+import FilterBar from "./FilterBar.vue"
 
 /** 岗位下拉项（后端返回的岗位上 postId 必填，用于 el-option 的 value） */
 type PostOption = SysPost & { postId: number }

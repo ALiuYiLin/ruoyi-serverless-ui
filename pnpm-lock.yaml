@@ -17,6 +17,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.3.4
         version: 4.3.4(vite@6.4.1(@types/node@26.6.6)(jiti@2.7.0)(lightningcss@1.33.0)(sass-embedded@1.97.2)(sass@1.97.2)(stylus@0.57.0(supports-color@8.1.1)))
+      '@vee-validate/zod':
+        specifier: ^4.15.1
+        version: 4.15.1(vue@3.5.26(typescript@5.6.3))(zod@3.25.76)
       '@vueuse/core':
         specifier: 14.1.0
         version: 14.1.0(vue@3.5.26(typescript@5.6.3))
@@ -62,6 +65,9 @@ importers:
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
+      vee-validate:
+        specifier: ^4.15.1
+        version: 4.15.1(vue@3.5.26(typescript@5.6.3))
       vue:
         specifier: 3.5.26
         version: 3.5.26(typescript@5.6.3)
@@ -71,6 +77,9 @@ importers:
       vue-router:
         specifier: 4.6.4
         version: 4.6.4(vue@3.5.26(typescript@5.6.3))
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@types/file-saver':
         specifier: 2.0.7
@@ -945,6 +954,11 @@ packages:
 
   '@types/web-bluetooth@0.0.21':
     resolution: {integrity: sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA==}
+
+  '@vee-validate/zod@4.15.1':
+    resolution: {integrity: sha512-329Z4TDBE5Vx0FdbA8S4eR9iGCFFUNGbxjpQ20ff5b5wGueScjocUIx9JHPa79LTG06RnlUR4XogQsjN4tecKA==}
+    peerDependencies:
+      zod: ^3.24.0
 
   '@vitejs/plugin-vue@5.2.4':
     resolution: {integrity: sha512-7Yx/SXSOcQq5HiiV3orevHUFn+pmMB4cgbEkDYgnkUWb0WfeQ/wa2yFv6D5ICiCQOVpjA7vYDXrC7AGO8yjDHA==}
@@ -3583,6 +3597,11 @@ packages:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
 
+  vee-validate@4.15.1:
+    resolution: {integrity: sha512-DkFsiTwEKau8VIxyZBGdO6tOudD+QoUBPuHj3e6QFqmbfCRj1ArmYWue9lEp6jLSWBIw4XPlDLjFIZNLdRAMSg==}
+    peerDependencies:
+      vue: ^3.4.26
+
   vite-plugin-compression@0.5.1:
     resolution: {integrity: sha512-5QJKBDc+gNYVqL/skgFAP81Yuzo9R+EAf19d+EtsMF/i8kFUpNi3J/H01QD3Oo8zBQn+NzoCIFkpPLynoOzaJg==}
     peerDependencies:
@@ -4381,6 +4400,14 @@ snapshots:
   '@types/web-bluetooth@0.0.20': {}
 
   '@types/web-bluetooth@0.0.21': {}
+
+  '@vee-validate/zod@4.15.1(vue@3.5.26(typescript@5.6.3))(zod@3.25.76)':
+    dependencies:
+      type-fest: 4.41.0
+      vee-validate: 4.15.1(vue@3.5.26(typescript@5.6.3))
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - vue
 
   '@vitejs/plugin-vue@5.2.4(vite@6.4.1(@types/node@26.6.6)(jiti@2.7.0)(lightningcss@1.33.0)(sass-embedded@1.97.2)(sass@1.97.2)(stylus@0.57.0(supports-color@8.1.1)))(vue@3.5.26(typescript@5.6.3))':
     dependencies:
@@ -7418,6 +7445,12 @@ snapshots:
   varint@6.0.0: {}
 
   vary@1.1.2: {}
+
+  vee-validate@4.15.1(vue@3.5.26(typescript@5.6.3)):
+    dependencies:
+      '@vue/devtools-api': 7.7.10
+      type-fest: 4.41.0
+      vue: 3.5.26(typescript@5.6.3)
 
   vite-plugin-compression@0.5.1(supports-color@8.1.1)(vite@6.4.1(@types/node@26.6.6)(jiti@2.7.0)(lightningcss@1.33.0)(sass-embedded@1.97.2)(sass@1.97.2)(stylus@0.57.0(supports-color@8.1.1))):
     dependencies:
