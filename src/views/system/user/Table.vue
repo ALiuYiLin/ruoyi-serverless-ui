@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useElementSize, useResizeObserver } from '@vueuse/core'
 import { ChevronLeftIcon, ChevronRightIcon } from '@lucide/vue'
 
 import Flex from '@/components/Flex/Flex.vue'
@@ -43,11 +44,51 @@ const rows = ref<UserRow[]>(
 )
 
 const page = ref(1)
-const pageSize = 10
+
+/** 表格可视区域，用于按“剩余高度 / 行高”动态计算每页条数 */
+const tableAreaRef = ref<HTMLElement>()
+const { height: tableAreaHeight } = useElementSize(tableAreaRef)
+const tableHeaderHeight = ref(0)
+const tableRowHeight = ref(40)
+
+const pageSize = computed(() => {
+  const available = tableAreaHeight.value - tableHeaderHeight.value
+  // 首帧或高度未测量到时先用默认值，测量完成后自动修正
+  if (available <= 0 || !tableRowHeight.value) {
+    return 10
+  }
+  return Math.max(1, Math.floor(available / tableRowHeight.value))
+})
+
+function measureTableMetrics() {
+  const element = tableAreaRef.value
+  if (!element) {
+    return
+  }
+  const thead = element.querySelector('thead')
+  const firstRow = element.querySelector('tbody tr')
+  if (thead) {
+    tableHeaderHeight.value = thead.getBoundingClientRect().height
+  }
+  if (firstRow) {
+    tableRowHeight.value = firstRow.getBoundingClientRect().height
+  }
+}
+
+useResizeObserver(tableAreaRef, measureTableMetrics)
+
 const total = computed(() => rows.value.length)
 const currentRows = computed(() =>
-  rows.value.slice((page.value - 1) * pageSize, page.value * pageSize)
+  rows.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value)
 )
+
+/** pageSize 变小后，避免当前页超出最大页数 */
+watch(pageSize, size => {
+  const maxPage = Math.max(1, Math.ceil(total.value / size))
+  if (page.value > maxPage) {
+    page.value = maxPage
+  }
+})
 
 /** 已选中的行 id */
 const selectedIds = ref<number[]>([])
@@ -90,15 +131,16 @@ function statusLabel(status: UserRow['status']): string {
   <Card radius="sm" :padding="0">
     <Flex direction="column" class="h-full" justify="space-between">
       <!-- 工具栏 -->
-      <Flex direction="column">
-        <Flex class="table-toolbar" align="center" :padding="14" :gap="5">
+      <Flex direction="column" class="min-h-0 flex-1">
+        <Flex class="table-toolbar shrink-0" align="center" :padding="14" :gap="5">
           <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
           <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >批量删除</Button>
           <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button>
         </Flex>
     
         <!-- 表格 -->
-        <Table class="border-b-2">
+        <div ref="tableAreaRef" class="min-h-0 flex-1 overflow-auto">
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead class="w-10">
@@ -134,11 +176,12 @@ function statusLabel(status: UserRow['status']): string {
               </TableCell>
             </TableRow>
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </Flex>
   
       <!-- 分页 -->
-      <Flex class="border-t-2" align="center" justify="space-between" :gap="8" :padding-x="14" :padding-y="9" >
+      <Flex class="shrink-0 border-t-2" align="center" justify="space-between" :gap="8" :padding-x="14" :padding-y="9" >
         <span class="text-sm text-muted-foreground whitespace-nowrap">共 {{ total }} 条</span>
         <Pagination
           v-model:page="page"
