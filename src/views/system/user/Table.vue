@@ -1,11 +1,29 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useElementSize, useResizeObserver } from '@vueuse/core'
-import { ChevronLeftIcon, ChevronRightIcon, Download, Loader2, Upload } from '@lucide/vue'
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Download,
+  KeyRound,
+  Loader2,
+  Pencil,
+  Settings2,
+  ShieldCheck,
+  Trash2,
+  Upload,
+} from '@lucide/vue'
 
 import Flex from '@/components/Flex/Flex.vue'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Pagination,
   PaginationContent,
@@ -38,6 +56,33 @@ import type { SysUser } from '@/types'
 import useSystemUserStore from '@/store/system/user'
 
 const userStore = useSystemUserStore()
+
+/** 可配置显隐的列 */
+const columnOptions = [
+  { key: 'userId', label: '用户编号', width: 'w-[7%]', skeleton: 'w-1/2' },
+  { key: 'userName', label: '用户名称', width: 'w-[12%]', skeleton: 'w-3/4' },
+  { key: 'nickName', label: '用户昵称', width: 'w-[10%]', skeleton: 'w-2/3' },
+  { key: 'deptName', label: '部门', width: 'w-[12%]', skeleton: 'w-2/3' },
+  { key: 'phonenumber', label: '手机号码', width: 'w-[12%]', skeleton: 'w-2/3' },
+  { key: 'status', label: '状态', width: 'w-[7%]', skeleton: 'w-1/2' },
+  { key: 'createTime', label: '创建时间', width: 'w-[16%]', skeleton: 'w-3/4' },
+] as const
+
+type ColumnKey = typeof columnOptions[number]['key']
+
+const columnVisible = reactive<Record<ColumnKey, boolean>>({
+  userId: true,
+  userName: true,
+  nickName: true,
+  deptName: true,
+  phonenumber: true,
+  status: true,
+  createTime: true,
+})
+
+const visibleDataColumns = computed(() => columnOptions.filter(column => columnVisible[column.key]))
+/** 勾选列 + 可见数据列 + 操作列 */
+const visibleColumnCount = computed(() => 1 + visibleDataColumns.value.length + 1)
 
 /** 表格可视区域，用于按“剩余高度 / 行高”动态计算每页条数 */
 const tableAreaRef = ref<HTMLElement>()
@@ -143,18 +188,17 @@ function toggleRow(id: number, value: boolean | 'indeterminate') {
   }
 }
 
-function userLabel(row: SysUser): string {
-  return row.nickName || row.userName || ''
-}
-
-function statusLabel(status?: '0' | '1'): string {
-  if (status === '0') {
-    return '正常'
+/** 状态切换（失败回滚） */
+async function handleStatusChange(row: SysUser, value: boolean | 'indeterminate') {
+  const next: '0' | '1' = value === true ? '0' : '1'
+  const previous = row.status
+  row.status = next
+  try {
+    await userStore.changeStatus(rowId(row), next)
+    ElMessage.success('状态修改成功')
+  } catch {
+    row.status = previous
   }
-  if (status === '1') {
-    return '停用'
-  }
-  return ''
 }
 
 /** 删除确认提交 */
@@ -184,9 +228,27 @@ async function handleConfirmDelete() {
           <Flex align="center" :gap="5">
             <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
             <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" @click="userStore.openDeleteConfirm(selectedIds)">批量删除</Button>
-            <!-- <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button> -->
           </Flex>
           <Flex align="center" :gap="5">
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="sm" radius="md">
+                  <Settings2 />
+                  列设置
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuCheckboxItem
+                  v-for="column in columnOptions"
+                  :key="column.key"
+                  :model-value="columnVisible[column.key]"
+                  @select.prevent
+                  @update:model-value="value => (columnVisible[column.key] = value === true)"
+                >
+                  {{ column.label }}
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button size="sm" radius="md" :disabled="selectedCount === 0" >
               <Upload />
               导入
@@ -208,10 +270,13 @@ async function handleConfirmDelete() {
                   @update:model-value="toggleAll"
                 />
               </TableHead>
-              <TableHead class="w-[18%]">用户名称</TableHead>
-              <TableHead class="w-[16%]">手机号码</TableHead>
-              <TableHead class="w-[10%]">状态</TableHead>
-              <TableHead class="w-[22%]">创建时间</TableHead>
+              <TableHead
+                v-for="column in visibleDataColumns"
+                :key="column.key"
+                :class="column.width"
+              >
+                {{ column.label }}
+              </TableHead>
               <TableHead>操作</TableHead>
             </TableRow>
           </TableHeader>
@@ -220,15 +285,14 @@ async function handleConfirmDelete() {
             <template v-if="userStore.loading">
               <TableRow v-for="index in skeletonRowCount" :key="`skeleton-${index}`" class="h-14">
                 <TableCell><Skeleton class="size-4 rounded-sm" /></TableCell>
-                <TableCell><Skeleton class="h-4 w-3/4" /></TableCell>
-                <TableCell><Skeleton class="h-4 w-2/3" /></TableCell>
-                <TableCell><Skeleton class="h-4 w-1/2" /></TableCell>
-                <TableCell><Skeleton class="h-4 w-3/4" /></TableCell>
+                <TableCell v-for="column in visibleDataColumns" :key="column.key">
+                  <Skeleton :class="['h-4', column.skeleton]" />
+                </TableCell>
                 <TableCell><Skeleton class="h-4 w-1/2" /></TableCell>
               </TableRow>
             </template>
             <TableRow v-else-if="userStore.userList.length === 0" class="h-14">
-              <TableCell colspan="6" class="text-center text-muted-foreground">暂无数据</TableCell>
+              <TableCell :colspan="visibleColumnCount" class="text-center text-muted-foreground">暂无数据</TableCell>
             </TableRow>
             <template v-else>
               <TableRow v-for="row in userStore.userList" :key="rowId(row)" data-row class="h-14">
@@ -238,15 +302,44 @@ async function handleConfirmDelete() {
                     @update:model-value="value => toggleRow(rowId(row), value)"
                   />
                 </TableCell>
-                <TableCell class="truncate">{{ userLabel(row) }}</TableCell>
-                <TableCell class="truncate">{{ row.phonenumber }}</TableCell>
-                <TableCell>{{ statusLabel(row.status) }}</TableCell>
-                <TableCell class="truncate">{{ row.createTime }}</TableCell>
+                <TableCell v-if="columnVisible.userId" class="truncate">{{ row.userId }}</TableCell>
+                <TableCell v-if="columnVisible.userName" class="truncate">
+                  <button
+                    type="button"
+                    class="cursor-pointer text-primary hover:underline"
+                    @click="userStore.openDetail(row)"
+                  >
+                    {{ row.userName }}
+                  </button>
+                </TableCell>
+                <TableCell v-if="columnVisible.nickName" class="truncate">{{ row.nickName }}</TableCell>
+                <TableCell v-if="columnVisible.deptName" class="truncate">{{ row.dept?.deptName }}</TableCell>
+                <TableCell v-if="columnVisible.phonenumber" class="truncate">{{ row.phonenumber }}</TableCell>
+                <TableCell v-if="columnVisible.status">
+                  <Switch
+                    size="sm"
+                    :model-value="row.status === '0'"
+                    :disabled="row.userId === 1"
+                    @update:model-value="value => handleStatusChange(row, value)"
+                  />
+                </TableCell>
+                <TableCell v-if="columnVisible.createTime" class="truncate">{{ row.createTime }}</TableCell>
                 <TableCell>
-                  <Flex :gap="4">
-                    <Button variant="ghost" size="sm" radius="md" @click="userStore.openEditForm(row)">修改</Button>
-                    <Button color="danger" variant="ghost" size="sm" radius="md" @click="userStore.openDeleteConfirm([rowId(row)])">删除</Button>
+                  <Flex v-if="row.userId !== 1" :gap="2">
+                    <Button variant="ghost" size="icon-xs" radius="md" title="修改" @click="userStore.openEditForm(row)">
+                      <Pencil />
+                    </Button>
+                    <Button variant="ghost" size="icon-xs" radius="md" title="删除" @click="userStore.openDeleteConfirm([rowId(row)])">
+                      <Trash2 />
+                    </Button>
+                    <Button variant="ghost" size="icon-xs" radius="md" title="重置密码" @click="userStore.openResetPwd(row)">
+                      <KeyRound />
+                    </Button>
+                    <Button variant="ghost" size="icon-xs" radius="md" title="分配角色" @click="userStore.openAuthRole(row)">
+                      <ShieldCheck />
+                    </Button>
                   </Flex>
+                  <span v-else class="text-xs text-muted-foreground">-</span>
                 </TableCell>
               </TableRow>
             </template>

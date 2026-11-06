@@ -1,8 +1,19 @@
 import { reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { addUser, deptTreeSelect, delUser, getUser, listUser, updateUser } from '@/api/system/user'
+import {
+  addUser,
+  changeUserStatus,
+  deptTreeSelect,
+  delUser,
+  getAuthRole,
+  getUser,
+  listUser,
+  resetUserPwd,
+  updateAuthRole,
+  updateUser,
+} from '@/api/system/user'
 import { getConfigKey } from '@/api/system/config'
-import type { SysPost, SysRole, SysUser, TreeSelect, UserQueryParams } from '@/types'
+import type { SysPost, SysRole, SysRoleWithFlag, SysUser, TreeSelect, UserQueryParams } from '@/types'
 
 /** 用户列表筛选条件 */
 export interface UserListFilter {
@@ -68,6 +79,26 @@ export const useSystemUserStore = defineStore('system-user', () => {
   const deleteVisible = ref(false)
   const deleteLoading = ref(false)
   const deleteIds = ref<number[]>([])
+
+  /** 用户详情 */
+  const detailVisible = ref(false)
+  const detailLoading = ref(false)
+  const detailUser = reactive<SysUser>({})
+  const detailPostNames = ref<string[]>([])
+  const detailRoleNames = ref<string[]>([])
+
+  /** 重置密码 */
+  const resetPwdVisible = ref(false)
+  const resetPwdLoading = ref(false)
+  const resetPwdUser = ref<SysUser>()
+
+  /** 分配角色 */
+  const authRoleVisible = ref(false)
+  const authRoleLoading = ref(false)
+  const authRoleSubmitting = ref(false)
+  const authRoleUser = reactive<SysUser>({})
+  const authRoleRoles = ref<SysRoleWithFlag[]>([])
+  const authRoleSelectedIds = ref<number[]>([])
 
   async function getList() {
     const seq = ++requestSeq
@@ -257,6 +288,115 @@ export const useSystemUserStore = defineStore('system-user', () => {
     }
   }
 
+  /** 切换用户状态 */
+  async function changeStatus(userId: number, status: '0' | '1') {
+    await changeUserStatus(userId, status)
+    const row = userList.value.find(item => item.userId === userId)
+    if (row) {
+      row.status = status
+    }
+  }
+
+  /** 打开用户详情 */
+  async function openDetail(row: SysUser) {
+    detailVisible.value = true
+    detailLoading.value = true
+    try {
+      const res = await getUser(row.userId)
+      Object.assign(detailUser, res.data ?? {})
+      const postIds = res.postIds ?? []
+      const roleIds = res.roleIds ?? []
+      detailPostNames.value = (res.posts ?? [])
+        .filter(item => item.postId != null && postIds.includes(item.postId))
+        .map(item => item.postName ?? '')
+      detailRoleNames.value = (res.roles ?? [])
+        .filter(item => item.roleId != null && roleIds.includes(item.roleId))
+        .map(item => item.roleName ?? '')
+    } finally {
+      detailLoading.value = false
+    }
+  }
+
+  function closeDetail() {
+    detailVisible.value = false
+  }
+
+  /** 打开重置密码弹窗 */
+  function openResetPwd(row: SysUser) {
+    resetPwdUser.value = { ...row }
+    resetPwdVisible.value = true
+  }
+
+  function closeResetPwd() {
+    resetPwdVisible.value = false
+    resetPwdUser.value = undefined
+  }
+
+  /** 提交重置密码 */
+  async function submitResetPwd(password: string) {
+    if (!resetPwdUser.value?.userId) {
+      return false
+    }
+    resetPwdLoading.value = true
+    try {
+      await resetUserPwd(resetPwdUser.value.userId, password)
+      resetPwdVisible.value = false
+      return true
+    } finally {
+      resetPwdLoading.value = false
+    }
+  }
+
+  /** 打开分配角色弹窗 */
+  async function openAuthRole(row: SysUser) {
+    authRoleVisible.value = true
+    authRoleLoading.value = true
+    try {
+      const res = await getAuthRole(row.userId!)
+      Object.assign(authRoleUser, res.user ?? {})
+      authRoleRoles.value = res.roles ?? []
+      authRoleSelectedIds.value = (res.roles ?? [])
+        .filter(item => item.flag && item.roleId != null)
+        .map(item => item.roleId as number)
+    } finally {
+      authRoleLoading.value = false
+    }
+  }
+
+  function closeAuthRole() {
+    authRoleVisible.value = false
+    authRoleRoles.value = []
+    authRoleSelectedIds.value = []
+  }
+
+  function toggleAuthRole(roleId: number, checked: boolean | 'indeterminate') {
+    if (checked === true) {
+      if (!authRoleSelectedIds.value.includes(roleId)) {
+        authRoleSelectedIds.value = [...authRoleSelectedIds.value, roleId]
+      }
+    } else {
+      authRoleSelectedIds.value = authRoleSelectedIds.value.filter(item => item !== roleId)
+    }
+  }
+
+  /** 提交角色授权 */
+  async function submitAuthRole() {
+    if (!authRoleUser.userId) {
+      return false
+    }
+    authRoleSubmitting.value = true
+    try {
+      await updateAuthRole({
+        userId: authRoleUser.userId,
+        roleIds: authRoleSelectedIds.value.join(','),
+      })
+      authRoleVisible.value = false
+      return true
+    } finally {
+      authRoleSubmitting.value = false
+    }
+  }
+
   return {
     queryParams,
     userList,
@@ -285,6 +425,30 @@ export const useSystemUserStore = defineStore('system-user', () => {
     openDeleteConfirm,
     closeDeleteConfirm,
     confirmDelete,
+    changeStatus,
+    detailVisible,
+    detailLoading,
+    detailUser,
+    detailPostNames,
+    detailRoleNames,
+    openDetail,
+    closeDetail,
+    resetPwdVisible,
+    resetPwdLoading,
+    resetPwdUser,
+    openResetPwd,
+    closeResetPwd,
+    submitResetPwd,
+    authRoleVisible,
+    authRoleLoading,
+    authRoleSubmitting,
+    authRoleUser,
+    authRoleRoles,
+    authRoleSelectedIds,
+    openAuthRole,
+    closeAuthRole,
+    toggleAuthRole,
+    submitAuthRole,
   }
 })
 

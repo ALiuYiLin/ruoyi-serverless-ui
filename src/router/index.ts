@@ -81,22 +81,7 @@ export const constantRoutes: AppRouteRecord[] = [
 ]
 
 // 动态路由，基于用户权限动态去加载
-export const dynamicRoutes: AppRouteRecord[] = [
-  {
-    path: '/system/user-auth',
-    component: Layout,
-    hidden: true,
-    permissions: ['system:user:edit'],
-    children: [
-      {
-        path: 'role/:userId(\\d+)',
-        component: () => import('@/views/system/user/authRole.vue'),
-        name: 'AuthRole',
-        meta: { title: '分配角色', activeMenu: '/system/user' }
-      }
-    ]
-  }
-]
+export const dynamicRoutes: AppRouteRecord[] = []
 
 const router = createRouter({
   history: createWebHistory(),
