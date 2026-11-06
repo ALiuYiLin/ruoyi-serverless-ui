@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useElementSize, useResizeObserver } from '@vueuse/core'
-import { ChevronLeftIcon, ChevronRightIcon, Download, Upload } from '@lucide/vue'
+import { ChevronLeftIcon, ChevronRightIcon, Download, Loader2, Upload } from '@lucide/vue'
 
 import Flex from '@/components/Flex/Flex.vue'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,16 @@ import {
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import Card from '@/components/ui/card/Card.vue'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { ElMessage } from 'element-plus'
 import type { SysUser } from '@/types'
 import useSystemUserStore from '@/store/system/user'
 
@@ -146,6 +156,23 @@ function statusLabel(status?: '0' | '1'): string {
   }
   return ''
 }
+
+/** 删除确认提交 */
+const deleting = ref(false)
+async function handleConfirmDelete() {
+  deleting.value = true
+  try {
+    const ok = await userStore.confirmDelete()
+    if (ok) {
+      selectedIds.value = []
+      ElMessage.success('删除成功')
+    }
+  } catch {
+    // 请求拦截器已统一提示错误
+  } finally {
+    deleting.value = false
+  }
+}
 </script>
 
 <template>
@@ -156,7 +183,7 @@ function statusLabel(status?: '0' | '1'): string {
         <Flex class="table-toolbar shrink-0" :padding="14" align="center" justify="space-between">
           <Flex align="center" :gap="5">
             <span class="text-sm text-muted-foreground">已选 {{ selectedCount }} 项</span>
-            <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >批量删除</Button>
+            <Button color="danger" variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" @click="userStore.openDeleteConfirm(selectedIds)">批量删除</Button>
             <Button variant="ghost" size="sm" radius="md" :disabled="selectedCount === 0" >修改</Button>
           </Flex>
           <Flex align="center" :gap="5">
@@ -218,7 +245,7 @@ function statusLabel(status?: '0' | '1'): string {
                 <TableCell>
                   <Flex :gap="4">
                     <Button variant="ghost" size="sm" radius="md" @click="userStore.openEditForm(row)">修改</Button>
-                    <Button color="danger" variant="ghost" size="sm" radius="md">删除</Button>
+                    <Button color="danger" variant="ghost" size="sm" radius="md" @click="userStore.openDeleteConfirm([rowId(row)])">删除</Button>
                   </Flex>
                 </TableCell>
               </TableRow>
@@ -258,6 +285,25 @@ function statusLabel(status?: '0' | '1'): string {
         </Pagination>
       </Flex>
     </Flex>
+
+    <!-- 删除确认 -->
+    <AlertDialog v-model:open="userStore.deleteVisible">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>删除用户</AlertDialogTitle>
+          <AlertDialogDescription>
+            确定要删除选中的 {{ userStore.deleteIds.length }} 个用户吗？删除后不可恢复。
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel radius="md" @click="userStore.closeDeleteConfirm()">取消</AlertDialogCancel>
+          <Button color="danger" radius="md" :disabled="deleting" @click="handleConfirmDelete">
+            <Loader2 v-if="deleting" class="animate-spin" />
+            删除
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </Card>
 </template>
 

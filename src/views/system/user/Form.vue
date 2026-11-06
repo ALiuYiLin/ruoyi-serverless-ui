@@ -5,7 +5,6 @@ import { ElMessage } from 'element-plus'
 
 import Flex from '@/components/Flex/Flex.vue'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -26,6 +25,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import useSystemUserStore from '@/store/system/user'
 import DeptTreeSelect from './DeptTreeSelect.vue'
+import MultiSelect from './MultiSelect.vue'
 
 const userStore = useSystemUserStore()
 
@@ -52,20 +52,26 @@ const statusOptions = [
   { value: '1', label: '停用' },
 ]
 
-/** 岗位/角色多选 */
-function toggleId(field: 'postIds' | 'roleIds', id: number | undefined, value: boolean | 'indeterminate') {
-  if (id == null) {
-    return
-  }
-  const list = userStore.formData[field] ?? []
-  if (value === true) {
-    if (!list.includes(id)) {
-      userStore.formData[field] = [...list, id]
-    }
-  } else {
-    userStore.formData[field] = list.filter(item => item !== id)
-  }
-}
+/** 岗位/角色下拉选项 */
+const postSelectOptions = computed(() =>
+  userStore.postOptions
+    .filter(item => item.postId != null)
+    .map(item => ({
+      value: item.postId as number,
+      label: item.postName ?? '',
+      disabled: item.status === '1',
+    }))
+)
+
+const roleSelectOptions = computed(() =>
+  userStore.roleOptions
+    .filter(item => item.roleId != null)
+    .map(item => ({
+      value: item.roleId as number,
+      label: item.roleName ?? '',
+      disabled: item.status === '1',
+    }))
+)
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const phonePattern = /^1[3-9]\d{9}$/
@@ -228,41 +234,23 @@ watch(() => userStore.formVisible, visible => {
           <!-- 岗位 -->
           <Flex direction="column" :gap="4">
             <Label class="whitespace-nowrap">岗位</Label>
-            <Flex wrap :gap="8">
-              <label
-                v-for="post in userStore.postOptions"
-                :key="post.postId"
-                class="flex items-center gap-2 text-sm"
-              >
-                <Checkbox
-                  :model-value="!!post.postId && (userStore.formData.postIds ?? []).includes(post.postId)"
-                  :disabled="post.status === '1'"
-                  @update:model-value="value => toggleId('postIds', post.postId, value)"
-                />
-                <span>{{ post.postName }}</span>
-              </label>
-              <span v-if="!userStore.postOptions.length" class="text-sm text-muted-foreground">暂无岗位</span>
-            </Flex>
+            <MultiSelect
+              :model-value="userStore.formData.postIds ?? []"
+              :options="postSelectOptions"
+              placeholder="请选择岗位"
+              @update:model-value="value => (userStore.formData.postIds = value)"
+            />
           </Flex>
 
           <!-- 角色 -->
           <Flex direction="column" :gap="4">
             <Label class="whitespace-nowrap">角色</Label>
-            <Flex wrap :gap="8">
-              <label
-                v-for="role in userStore.roleOptions"
-                :key="role.roleId"
-                class="flex items-center gap-2 text-sm"
-              >
-                <Checkbox
-                  :model-value="!!role.roleId && (userStore.formData.roleIds ?? []).includes(role.roleId)"
-                  :disabled="role.status === '1'"
-                  @update:model-value="value => toggleId('roleIds', role.roleId, value)"
-                />
-                <span>{{ role.roleName }}</span>
-              </label>
-              <span v-if="!userStore.roleOptions.length" class="text-sm text-muted-foreground">暂无角色</span>
-            </Flex>
+            <MultiSelect
+              :model-value="userStore.formData.roleIds ?? []"
+              :options="roleSelectOptions"
+              placeholder="请选择角色"
+              @update:model-value="value => (userStore.formData.roleIds = value)"
+            />
           </Flex>
 
           <!-- 备注 -->

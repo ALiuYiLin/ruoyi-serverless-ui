@@ -1,6 +1,6 @@
 import { reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { addUser, deptTreeSelect, getUser, listUser, updateUser } from '@/api/system/user'
+import { addUser, deptTreeSelect, delUser, getUser, listUser, updateUser } from '@/api/system/user'
 import { getConfigKey } from '@/api/system/config'
 import type { SysPost, SysRole, SysUser, TreeSelect, UserQueryParams } from '@/types'
 
@@ -63,6 +63,11 @@ export const useSystemUserStore = defineStore('system-user', () => {
   const roleOptions = ref<SysRole[]>([])
   const deptOptions = ref<TreeSelect[]>([])
   let deptTreeLoaded = false
+
+  /** 删除确认 */
+  const deleteVisible = ref(false)
+  const deleteLoading = ref(false)
+  const deleteIds = ref<number[]>([])
 
   async function getList() {
     const seq = ++requestSeq
@@ -219,6 +224,39 @@ export const useSystemUserStore = defineStore('system-user', () => {
     return true
   }
 
+  /** 打开删除确认弹窗 */
+  function openDeleteConfirm(ids: number[]) {
+    if (!ids.length) {
+      return
+    }
+    deleteIds.value = [...ids]
+    deleteVisible.value = true
+  }
+
+  /** 关闭删除确认弹窗 */
+  function closeDeleteConfirm() {
+    deleteVisible.value = false
+    deleteIds.value = []
+  }
+
+  /** 确认删除并刷新列表 */
+  async function confirmDelete() {
+    if (!deleteIds.value.length) {
+      return false
+    }
+    deleteLoading.value = true
+    try {
+      const ids = deleteIds.value.length === 1 ? deleteIds.value[0] : [...deleteIds.value]
+      await delUser(ids)
+      deleteVisible.value = false
+      deleteIds.value = []
+      await getList()
+      return true
+    } finally {
+      deleteLoading.value = false
+    }
+  }
+
   return {
     queryParams,
     userList,
@@ -241,6 +279,12 @@ export const useSystemUserStore = defineStore('system-user', () => {
     openEditForm,
     closeForm,
     submitForm,
+    deleteVisible,
+    deleteLoading,
+    deleteIds,
+    openDeleteConfirm,
+    closeDeleteConfirm,
+    confirmDelete,
   }
 })
 
