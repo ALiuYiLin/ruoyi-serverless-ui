@@ -2,6 +2,9 @@
 import { Plus } from "@lucide/vue";
 import Flex from "@/components/Flex/Flex.vue";
 import Button from "@/components/ui/button/Button.vue";
+import useSystemUserStore from "@/store/system/user";
+
+const userStore = useSystemUserStore();
 </script>
 
 <template>
@@ -14,12 +17,10 @@ import Button from "@/components/ui/button/Button.vue";
     </Flex>
     <Flex direction="column-reverse">
       <Flex :gap="10">
-        <Button color="primary"  radius="md">
+        <Button color="primary" radius="md" @click="userStore.openAddForm()">
           <Plus />
           新增
         </Button>
-        <!-- <Button variant="outline" radius="md">导入</Button> -->
-        <!-- <Button variant="outline" radius="md">导出</Button> -->
       </Flex>
     </Flex>
   </Flex>

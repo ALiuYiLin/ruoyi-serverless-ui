@@ -1,7 +1,8 @@
 import { reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { listUser } from '@/api/system/user'
-import type { SysUser, UserQueryParams } from '@/types'
+import { addUser, deptTreeSelect, getUser, listUser, updateUser } from '@/api/system/user'
+import { getConfigKey } from '@/api/system/config'
+import type { SysPost, SysRole, SysUser, TreeSelect, UserQueryParams } from '@/types'
 
 /** 用户列表筛选条件 */
 export interface UserListFilter {
@@ -15,6 +16,24 @@ export interface UserListFilter {
   beginTime?: string
   /** 创建时间止 */
   endTime?: string
+}
+
+/** 表单默认值 */
+function createDefaultForm(): SysUser {
+  return {
+    userId: undefined,
+    deptId: undefined,
+    userName: undefined,
+    nickName: undefined,
+    password: undefined,
+    phonenumber: undefined,
+    email: undefined,
+    sex: '2',
+    status: '0',
+    remark: undefined,
+    postIds: [],
+    roleIds: [],
+  }
 }
 
 export const useSystemUserStore = defineStore('system-user', () => {
@@ -34,6 +53,16 @@ export const useSystemUserStore = defineStore('system-user', () => {
   const loading = ref(false)
   /** 请求序号，避免快速切换时旧请求覆盖新数据 */
   let requestSeq = 0
+
+  /** 新增/修改表单 */
+  const formVisible = ref(false)
+  const formMode = ref<'add' | 'edit'>('add')
+  const formLoading = ref(false)
+  const formData = reactive<SysUser>(createDefaultForm())
+  const postOptions = ref<SysPost[]>([])
+  const roleOptions = ref<SysRole[]>([])
+  const deptOptions = ref<TreeSelect[]>([])
+  let deptTreeLoaded = false
 
   async function getList() {
     const seq = ++requestSeq
@@ -112,6 +141,84 @@ export const useSystemUserStore = defineStore('system-user', () => {
     return getList()
   }
 
+  /** 查询部门树（只请求一次） */
+  async function loadDeptTree() {
+    if (deptTreeLoaded) {
+      return
+    }
+    const res = await deptTreeSelect()
+    deptOptions.value = res.data ?? []
+    deptTreeLoaded = true
+  }
+
+  /** 重置表单 */
+  function resetForm() {
+    Object.assign(formData, createDefaultForm())
+  }
+
+  /** 打开新增表单 */
+  async function openAddForm() {
+    formMode.value = 'add'
+    resetForm()
+    formVisible.value = true
+    formLoading.value = true
+    try {
+      const [userRes, configRes] = await Promise.all([
+        getUser(),
+        getConfigKey('sys.user.initPassword').catch(() => undefined),
+      ])
+      postOptions.value = userRes.posts ?? []
+      roleOptions.value = userRes.roles ?? []
+      if (configRes?.msg) {
+        formData.password = String(configRes.msg)
+      }
+      await loadDeptTree()
+    } finally {
+      formLoading.value = false
+    }
+  }
+
+  /** 打开修改表单 */
+  async function openEditForm(row: SysUser) {
+    formMode.value = 'edit'
+    resetForm()
+    formVisible.value = true
+    formLoading.value = true
+    try {
+      const res = await getUser(row.userId)
+      Object.assign(formData, res.data ?? {})
+      formData.postIds = res.postIds ?? []
+      formData.roleIds = res.roleIds ?? []
+      // 修改时不回显/提交密码
+      formData.password = undefined
+      postOptions.value = res.posts ?? []
+      roleOptions.value = res.roles ?? []
+      await loadDeptTree()
+    } finally {
+      formLoading.value = false
+    }
+  }
+
+  /** 关闭表单 */
+  function closeForm() {
+    formVisible.value = false
+    resetForm()
+  }
+
+  /** 提交表单（新增/修改） */
+  async function submitForm() {
+    const isEdit = formData.userId != null
+    if (isEdit) {
+      await updateUser({ ...formData })
+    } else {
+      await addUser({ ...formData })
+    }
+    formVisible.value = false
+    resetForm()
+    await getList()
+    return true
+  }
+
   return {
     queryParams,
     userList,
@@ -122,6 +229,18 @@ export const useSystemUserStore = defineStore('system-user', () => {
     resetQuery,
     setPage,
     setPageSize,
+    formVisible,
+    formMode,
+    formLoading,
+    formData,
+    postOptions,
+    roleOptions,
+    deptOptions,
+    loadDeptTree,
+    openAddForm,
+    openEditForm,
+    closeForm,
+    submitForm,
   }
 })
 
