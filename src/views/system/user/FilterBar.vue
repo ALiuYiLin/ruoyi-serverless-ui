@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Card from '@/components/ui/card/Card.vue'
-import DeptTreeSelect from './DeptTreeSelect.vue'
+import DeptTreeSelect from '@/business/components/DeptTreeSelect/index.vue'
 
 import useSystemUserStore, { type UserListFilter } from '@/store/system/user'
 

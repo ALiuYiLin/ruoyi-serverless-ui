@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import useSystemUserStore from '@/store/system/user'
-import DeptTreeSelect from './DeptTreeSelect.vue'
+import DeptTreeSelect from '@/business/components/DeptTreeSelect/index.vue'
 import MultiSelect from './MultiSelect.vue'
 
 const props = defineProps<{
