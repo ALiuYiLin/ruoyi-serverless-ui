@@ -13,6 +13,7 @@ interface UserState {
   name: string
   nickName: string
   avatar: string
+  deptName: string
   roles: string[]
   permissions: string[]
 }
@@ -26,6 +27,7 @@ const useUserStore = defineStore(
       name: '',
       nickName: '',
       avatar: '',
+      deptName: '',
       roles: [],
       permissions: []
     }),
@@ -66,6 +68,7 @@ const useUserStore = defineStore(
             this.name = user.userName || ''
             this.nickName = user.nickName || ''
             this.avatar = avatar
+            this.deptName = user.dept?.deptName || ''
             cache.session.set('pwrChrtype', res.pwdChrtype ?? '0')
             /* 初始密码提示 */
             if(res.isDefaultModifyPwd) {

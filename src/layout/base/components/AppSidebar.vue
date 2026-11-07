@@ -5,7 +5,7 @@ import {
   Command,
   GalleryVerticalEnd,
 } from "@lucide/vue"
-import TeamSwitcher from "@/layout/base/components/TeamSwitcher.vue"
+import SidebarBrand from "@/layout/base/components/SidebarBrand.vue"
 import {
   Sidebar,
   SidebarContent,
@@ -55,7 +55,7 @@ const data = {
 <template>
   <Sidebar v-bind="props" class="app-sidebar">
     <SidebarHeader>
-      <TeamSwitcher :teams="data.teams" />
+      <SidebarBrand :teams="data.teams" />
     </SidebarHeader>
     <SidebarContent>
       <NavMenu :sidebarRouters="sidebarRouters" />
