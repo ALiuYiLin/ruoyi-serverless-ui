@@ -18,7 +18,8 @@ export interface RoleQueryParams extends PageDomain {
 /** 批量授权用户参数 */
 export interface AuthUserSelectParams {
   roleId: number;
-  userIds: number[];
+  /** 逗号分隔的 userId 字符串（后端按字符串接收） */
+  userIds: string;
 }
 
 /** 用户和角色关联信息 */
