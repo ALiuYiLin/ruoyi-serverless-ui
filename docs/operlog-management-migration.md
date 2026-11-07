@@ -1,7 +1,7 @@
 # 操作日志迁移报告（RuoYi-Vue3 → ruoyi-ts）
 
 > 参考：`E:\code3\RuoYi-Vue3\src\views\monitor\operlog`（`index.vue`、`detail.vue`）
-> 目标：`src/views/system/operlog`（菜单属于「系统管理 → 日志管理 → 操作日志」）
+> 目标：`src/views/monitor/operlog`（菜单属于「系统管理 → 日志管理 → 操作日志」）
 >
 > 本报告只做方案设计，不包含代码改动。
 
@@ -37,7 +37,7 @@
 ## 2. 目标组件结构
 
 ```
-src/views/system/operlog/
+src/views/monitor/operlog/
 ├── index.vue          # PageHead + FilterBar + Table + OperlogDetailDialog
 ├── PageHead.vue       # 标题「操作日志」
 ├── FilterBar.vue      # 操作地址/系统模块/操作人员/类型/状态/操作时间

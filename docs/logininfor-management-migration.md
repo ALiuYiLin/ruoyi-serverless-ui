@@ -1,7 +1,7 @@
 # 登录日志迁移报告（RuoYi-Vue3 → ruoyi-ts）
 
 > 参考：`E:\code3\RuoYi-Vue3\src\views\monitor\logininfor\index.vue`
-> 目标：`src/views/system/logininfor`（菜单属于「系统管理 → 日志管理 → 登录日志」）
+> 目标：`src/views/monitor/logininfor`（菜单属于「系统管理 → 日志管理 → 登录日志」）
 >
 > 本报告只做方案设计，不包含代码改动。
 
@@ -31,7 +31,7 @@
 ## 2. 目标组件结构
 
 ```
-src/views/system/logininfor/
+src/views/monitor/logininfor/
 ├── index.vue        # PageHead + FilterBar + Table
 ├── PageHead.vue     # 标题「登录日志」
 ├── FilterBar.vue    # 登录地址 / 用户名称 / 状态 / 登录时间
