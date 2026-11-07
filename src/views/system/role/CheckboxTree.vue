@@ -204,8 +204,8 @@ interface TreeRow {
   checked: boolean
   indeterminate: boolean
 }
-
 const visibleRows = computed<TreeRow[]>(() => {
+  
   const rows: TreeRow[] = []
   const walk = (nodes: TreeSelect[]) => {
     for (const node of nodes) {
@@ -289,6 +289,7 @@ defineExpose({ getCheckedKeys })
         v-for="row in visibleRows"
         :key="row.id"
         class="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
+        :style="{paddingLeft: row.level*20+'px'}"
       >
         <button
           type="button"
