@@ -1,0 +1,58 @@
+import request from '@/utils/request'
+import type { AjaxResult, CacheMonitorData, SysCache } from '@/types'
+
+// 查询缓存详细
+export function getCache(): Promise<AjaxResult<CacheMonitorData>> {
+  return request({
+    url: '/monitor/cache',
+    method: 'get'
+  })
+}
+
+// 查询缓存名称列表
+export function listCacheName(): Promise<AjaxResult<SysCache[]>> {
+  return request({
+    url: '/monitor/cache/getNames',
+    method: 'get'
+  })
+}
+
+// 查询缓存键名列表
+export function listCacheKey(cacheName: string): Promise<AjaxResult<string[]>> {
+  return request({
+    url: '/monitor/cache/getKeys/' + encodeURIComponent(cacheName),
+    method: 'get'
+  })
+}
+
+// 查询缓存内容
+export function getCacheValue(cacheName: string, cacheKey: string): Promise<AjaxResult<SysCache>> {
+  return request({
+    url: '/monitor/cache/getValue/' + encodeURIComponent(cacheName) + '/' + encodeURIComponent(cacheKey),
+    method: 'get'
+  })
+}
+
+// 清理指定名称缓存
+export function clearCacheName(cacheName: string): Promise<AjaxResult> {
+  return request({
+    url: '/monitor/cache/clearCacheName/' + encodeURIComponent(cacheName),
+    method: 'delete'
+  })
+}
+
+// 清理指定键名缓存
+export function clearCacheKey(cacheKey: string): Promise<AjaxResult> {
+  return request({
+    url: '/monitor/cache/clearCacheKey/' + encodeURIComponent(cacheKey),
+    method: 'delete'
+  })
+}
+
+// 清理全部缓存
+export function clearCacheAll(): Promise<AjaxResult> {
+  return request({
+    url: '/monitor/cache/clearCacheAll',
+    method: 'delete'
+  })
+}

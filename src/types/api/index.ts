@@ -20,3 +20,8 @@ export * from "./system/notice";
 // Monitor 模块
 export * from "./monitor/operlog";
 export * from "./monitor/logininfor";
+export * from "./monitor/online";
+export * from "./monitor/job";
+export * from "./monitor/jobLog";
+export * from "./monitor/server";
+export * from "./monitor/cache";

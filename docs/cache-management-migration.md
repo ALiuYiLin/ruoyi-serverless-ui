@@ -16,12 +16,12 @@
 | 缓存监控 | `monitor/cache/index` | `views/monitor/cache/index.vue` |
 | 缓存列表 | `monitor/cache/list` | `views/monitor/cache/list.vue` |
 
-当前项目没有 `echarts` 依赖。参考页面用 ECharts 画「命令统计饼图」和「内存仪表盘」，迁移建议：
+参考页面用 ECharts 画「命令统计饼图」和「内存仪表盘」。
 
-- 方案 A（推荐，无新依赖）：用 Tailwind/CSS 做命令统计条形列表 + 内存使用进度条；
-- 方案 B：安装 `echarts` 保持原样图表。
+当前项目已按本次迁移要求安装 `echarts@6.1.0`，直接沿用参考实现：
 
-本报告按方案 A 设计。
+- 命令统计：`pie`（`roseType: 'radius'`）；
+- 内存信息：`gauge`，max=1000，value 取 `parseFloat(info.used_memory_human)`。
 
 ---
 
@@ -219,7 +219,7 @@ export interface CacheMonitorData {
 | `el-input type=textarea readonly` | `Textarea disabled` 或 `<pre>` |
 | `$modal.confirm` | `AlertDialog` |
 | `v-loading` | `loading` + `Skeleton` |
-| `echarts` | 不引入；命令统计用条形列表，内存用进度条（可选安装 echarts） |
+| `echarts` | 已安装 `echarts@6.1.0`，命令统计饼图 + 内存仪表盘 |
 
 ---
 
