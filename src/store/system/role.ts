@@ -22,6 +22,9 @@ export interface RoleListFilter {
   endTime?: string
 }
 
+/** 最小 loading 时长，避免骨架屏一闪而过 */
+const MIN_LOADING_MS = 300
+
 /** 表单默认值 */
 function createDefaultForm(): SysRole {
   return {
@@ -51,6 +54,7 @@ export const useSystemRoleStore = defineStore('system-role', () => {
 
   async function getList() {
     const seq = ++requestSeq
+    const startedAt = Date.now()
     loading.value = true
     try {
       const res = await listRole(queryParams)
@@ -65,6 +69,11 @@ export const useSystemRoleStore = defineStore('system-role', () => {
         await getList()
       }
     } finally {
+      // 即使数据很快返回，也让 loading 至少持续 MIN_LOADING_MS，骨架屏过渡更平缓
+      const remaining = MIN_LOADING_MS - (Date.now() - startedAt)
+      if (remaining > 0) {
+        await new Promise(resolve => setTimeout(resolve, remaining))
+      }
       if (seq === requestSeq) {
         loading.value = false
       }

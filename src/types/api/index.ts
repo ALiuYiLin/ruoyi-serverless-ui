@@ -10,6 +10,7 @@ export * from "./menu";
 // System 模块
 export * from "./system/user";
 export * from "./system/role";
+export * from "./system/dept";
 export * from "./system/menu";
 export * from "./system/post";
 export * from "./system/dict";
