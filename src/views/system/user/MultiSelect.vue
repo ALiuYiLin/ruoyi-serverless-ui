@@ -20,9 +20,11 @@ const props = withDefaults(defineProps<{
   modelValue?: number[]
   options: MultiSelectOption[]
   placeholder?: string
+  disabled?: boolean
 }>(), {
   modelValue: () => [],
   placeholder: '请选择',
+  disabled: false,
 })
 
 const emit = defineEmits<{
@@ -48,7 +50,7 @@ function toggle(value: number, checked: boolean | 'indeterminate') {
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button type="button" variant="outline" radius="md" class="w-full justify-between font-normal">
+      <Button type="button" variant="outline" radius="md" class="w-full justify-between font-normal" :disabled="disabled">
         <span :class="selectedLabels.length ? 'truncate' : 'text-muted-foreground'">
           {{ selectedLabels.length ? selectedLabels.join('、') : placeholder }}
         </span>
@@ -60,7 +62,7 @@ function toggle(value: number, checked: boolean | 'indeterminate') {
         v-for="option in options"
         :key="option.value"
         :model-value="modelValue.includes(option.value)"
-        :disabled="option.disabled"
+        :disabled="option.disabled || disabled"
         @select.prevent
         @update:model-value="checked => toggle(option.value, checked)"
         class="rounded-sm"

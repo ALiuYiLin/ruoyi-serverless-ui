@@ -3,8 +3,7 @@
     <PageHead></PageHead>
     <FilterBar></FilterBar>
     <Table class="flex-1"></Table>
-    <Form></Form>
-    <UserDetail></UserDetail>
+    <Form :scene="userStore.formScene"></Form>
     <ResetPwd></ResetPwd>
     <AuthRoleDialog></AuthRoleDialog>
   </Flex>
@@ -20,7 +19,6 @@ import Form from './Form.vue';
 import PageHead from './PageHead.vue';
 import ResetPwd from './ResetPwd.vue';
 import Table from './Table.vue';
-import UserDetail from './UserDetail.vue';
 
 const userStore = useSystemUserStore();
 

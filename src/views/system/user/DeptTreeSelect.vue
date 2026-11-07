@@ -10,8 +10,10 @@ const props = withDefaults(defineProps<{
   modelValue?: number
   options: TreeSelect[]
   placeholder?: string
+  disabled?: boolean
 }>(), {
   placeholder: '请选择归属部门',
+  disabled: false,
 })
 
 const emit = defineEmits<{
@@ -122,7 +124,7 @@ function selectRow(row: DeptRow) {
 <template>
   <Popover v-model:open="open">
     <PopoverTrigger as-child>
-      <Button variant="outline" radius="md" type="button" class="w-full justify-between font-normal">
+      <Button variant="outline" radius="md" type="button" class="w-full justify-between font-normal" :disabled="disabled">
         <span :class="selectedLabel ? '' : 'text-muted-foreground'">
           {{ selectedLabel || placeholder }}
         </span>

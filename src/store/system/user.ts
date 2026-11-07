@@ -67,9 +67,9 @@ export const useSystemUserStore = defineStore('system-user', () => {
   /** 请求序号，避免快速切换时旧请求覆盖新数据 */
   let requestSeq = 0
 
-  /** 新增/修改表单 */
+  /** 新增/修改/查看表单 */
   const formVisible = ref(false)
-  const formMode = ref<'add' | 'edit'>('add')
+  const formScene = ref<'add' | 'edit' | 'view'>('add')
   const formLoading = ref(false)
   const formData = reactive<SysUser>(createDefaultForm())
   const postOptions = ref<SysPost[]>([])
@@ -81,13 +81,6 @@ export const useSystemUserStore = defineStore('system-user', () => {
   const deleteVisible = ref(false)
   const deleteLoading = ref(false)
   const deleteIds = ref<number[]>([])
-
-  /** 用户详情 */
-  const detailVisible = ref(false)
-  const detailLoading = ref(false)
-  const detailUser = reactive<SysUser>({})
-  const detailPostNames = ref<string[]>([])
-  const detailRoleNames = ref<string[]>([])
 
   /** 重置密码 */
   const resetPwdVisible = ref(false)
@@ -197,7 +190,7 @@ export const useSystemUserStore = defineStore('system-user', () => {
 
   /** 打开新增表单 */
   async function openAddForm() {
-    formMode.value = 'add'
+    formScene.value = 'add'
     resetForm()
     formVisible.value = true
     formLoading.value = true
@@ -219,7 +212,7 @@ export const useSystemUserStore = defineStore('system-user', () => {
 
   /** 打开修改表单 */
   async function openEditForm(row: SysUser) {
-    formMode.value = 'edit'
+    formScene.value = 'edit'
     resetForm()
     formVisible.value = true
     formLoading.value = true
@@ -300,28 +293,24 @@ export const useSystemUserStore = defineStore('system-user', () => {
     }
   }
 
-  /** 打开用户详情 */
+  /** 打开用户详情（view 场景，复用表单字段只读展示） */
   async function openDetail(row: SysUser) {
-    detailVisible.value = true
-    detailLoading.value = true
+    formScene.value = 'view'
+    resetForm()
+    formVisible.value = true
+    formLoading.value = true
     try {
       const res = await getUser(row.userId)
-      Object.assign(detailUser, res.data ?? {})
-      const postIds = res.postIds ?? []
-      const roleIds = res.roleIds ?? []
-      detailPostNames.value = (res.posts ?? [])
-        .filter(item => item.postId != null && postIds.includes(item.postId))
-        .map(item => item.postName ?? '')
-      detailRoleNames.value = (res.roles ?? [])
-        .filter(item => item.roleId != null && roleIds.includes(item.roleId))
-        .map(item => item.roleName ?? '')
+      Object.assign(formData, res.data ?? {})
+      formData.postIds = res.postIds ?? []
+      formData.roleIds = res.roleIds ?? []
+      formData.password = undefined
+      postOptions.value = res.posts ?? []
+      roleOptions.value = res.roles ?? []
+      await loadDeptTree()
     } finally {
-      detailLoading.value = false
+      formLoading.value = false
     }
-  }
-
-  function closeDetail() {
-    detailVisible.value = false
   }
 
   /** 打开重置密码弹窗 */
@@ -411,7 +400,7 @@ export const useSystemUserStore = defineStore('system-user', () => {
     setPage,
     setPageSize,
     formVisible,
-    formMode,
+    formScene,
     formLoading,
     formData,
     postOptions,
@@ -429,13 +418,7 @@ export const useSystemUserStore = defineStore('system-user', () => {
     closeDeleteConfirm,
     confirmDelete,
     changeStatus,
-    detailVisible,
-    detailLoading,
-    detailUser,
-    detailPostNames,
-    detailRoleNames,
     openDetail,
-    closeDetail,
     resetPwdVisible,
     resetPwdLoading,
     resetPwdUser,

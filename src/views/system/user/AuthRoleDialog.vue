@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Loader2 } from '@lucide/vue'
 import { ElMessage } from 'element-plus'
 
 import Flex from '@/components/Flex/Flex.vue'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -17,9 +16,21 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import useSystemUserStore from '@/store/system/user'
+import MultiSelect from './MultiSelect.vue'
 
 const userStore = useSystemUserStore()
 const submitting = ref(false)
+
+/** 角色下拉选项 */
+const roleSelectOptions = computed(() =>
+  userStore.authRoleRoles
+    .filter(item => item.roleId != null)
+    .map(item => ({
+      value: item.roleId as number,
+      label: item.roleName ?? '',
+      disabled: item.status === '1',
+    }))
+)
 
 async function handleSubmit() {
   submitting.value = true
@@ -65,21 +76,12 @@ async function handleSubmit() {
 
         <Flex direction="column" :gap="4">
           <Label class="whitespace-nowrap">角色</Label>
-          <Flex wrap :gap="8">
-            <label
-              v-for="role in userStore.authRoleRoles"
-              :key="role.roleId"
-              class="flex items-center gap-2 text-sm"
-            >
-              <Checkbox
-                :model-value="role.roleId != null && userStore.authRoleSelectedIds.includes(role.roleId)"
-                :disabled="role.status === '1'"
-                @update:model-value="value => userStore.toggleAuthRole(role.roleId!, value)"
-              />
-              <span>{{ role.roleName }}</span>
-            </label>
-            <span v-if="!userStore.authRoleRoles.length" class="text-sm text-muted-foreground">暂无角色</span>
-          </Flex>
+          <MultiSelect
+            :model-value="userStore.authRoleSelectedIds"
+            :options="roleSelectOptions"
+            placeholder="请选择角色"
+            @update:model-value="value => (userStore.authRoleSelectedIds = value)"
+          />
         </Flex>
 
         <DialogFooter class="gap-2">

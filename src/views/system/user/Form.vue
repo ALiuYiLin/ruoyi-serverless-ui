@@ -27,10 +27,30 @@ import useSystemUserStore from '@/store/system/user'
 import DeptTreeSelect from './DeptTreeSelect.vue'
 import MultiSelect from './MultiSelect.vue'
 
+const props = defineProps<{
+  /** 表单场景：view 只读详情 / add 新增 / edit 修改 */
+  scene: 'view' | 'add' | 'edit'
+}>()
+
 const userStore = useSystemUserStore()
 
-const isEdit = computed(() => userStore.formMode === 'edit')
-const formTitle = computed(() => (isEdit.value ? '修改用户' : '新增用户'))
+const isView = computed(() => props.scene === 'view')
+const isEdit = computed(() => props.scene === 'edit')
+/** 是否可编辑：view 场景下复用同一套表单字段，但全部只读 */
+const editable = computed(() => props.scene !== 'view')
+
+const formTitle = computed(() => {
+  if (isView.value) {
+    return '用户详情'
+  }
+  return isEdit.value ? '修改用户' : '新增用户'
+})
+const formDescription = computed(() => {
+  if (isView.value) {
+    return '查看用户基本信息（只读）'
+  }
+  return isEdit.value ? '修改用户基本信息' : '填写用户基本信息'
+})
 
 const submitting = ref(false)
 const errors = reactive<Record<string, string>>({
@@ -109,14 +129,14 @@ function validateForm(): boolean {
 }
 
 async function handleSubmit() {
-  if (!validateForm()) {
+  if (!editable.value || !validateForm()) {
     return
   }
   submitting.value = true
   try {
-    const mode = userStore.formMode
+    const scene = props.scene
     await userStore.submitForm()
-    ElMessage.success(mode === 'edit' ? '修改成功' : '新增成功')
+    ElMessage.success(scene === 'edit' ? '修改成功' : '新增成功')
   } catch {
     // 请求拦截器已统一提示错误
   } finally {
@@ -137,9 +157,7 @@ watch(() => userStore.formVisible, visible => {
     <DialogContent class="sm:max-w-[640px]">
       <DialogHeader>
         <DialogTitle>{{ formTitle }}</DialogTitle>
-        <DialogDescription>
-          {{ isEdit ? '修改用户基本信息' : '填写用户基本信息' }}
-        </DialogDescription>
+        <DialogDescription>{{ formDescription }}</DialogDescription>
       </DialogHeader>
 
       <Flex v-if="userStore.formLoading" align="center" justify="center" :gap="8" :padding-y="24">
@@ -151,8 +169,16 @@ watch(() => userStore.formVisible, visible => {
         <div class="grid grid-cols-2 gap-4">
           <!-- 用户昵称 -->
           <Flex direction="column" :gap="4">
-            <Label class="whitespace-nowrap">用户昵称<span class="text-destructive">*</span></Label>
-            <Input v-model="userStore.formData.nickName" placeholder="请输入用户昵称" maxlength="30" radius="md" />
+            <Label class="whitespace-nowrap">
+              用户昵称<span v-if="editable" class="text-destructive">*</span>
+            </Label>
+            <Input
+              v-model="userStore.formData.nickName"
+              placeholder="请输入用户昵称"
+              maxlength="30"
+              radius="md"
+              :disabled="!editable"
+            />
             <p v-if="errors.nickName" class="text-xs text-destructive">{{ errors.nickName }}</p>
           </Flex>
 
@@ -163,19 +189,28 @@ watch(() => userStore.formVisible, visible => {
               :model-value="userStore.formData.deptId"
               :options="userStore.deptOptions"
               placeholder="请选择归属部门"
+              :disabled="!editable"
               @update:model-value="value => (userStore.formData.deptId = value)"
             />
           </Flex>
 
-          <!-- 用户名称（仅新增） -->
+          <!-- 用户名称（新增可填，修改/查看只读） -->
           <Flex v-if="!isEdit" direction="column" :gap="4">
-            <Label class="whitespace-nowrap">用户名称<span class="text-destructive">*</span></Label>
-            <Input v-model="userStore.formData.userName" placeholder="请输入用户名称" maxlength="30" radius="md" />
+            <Label class="whitespace-nowrap">
+              用户名称<span v-if="editable" class="text-destructive">*</span>
+            </Label>
+            <Input
+              v-model="userStore.formData.userName"
+              placeholder="请输入用户名称"
+              maxlength="30"
+              radius="md"
+              :disabled="!editable"
+            />
             <p v-if="errors.userName" class="text-xs text-destructive">{{ errors.userName }}</p>
           </Flex>
 
           <!-- 用户密码（仅新增） -->
-          <Flex v-if="!isEdit" direction="column" :gap="4">
+          <Flex v-if="scene === 'add'" direction="column" :gap="4">
             <Label class="whitespace-nowrap">用户密码<span class="text-destructive">*</span></Label>
             <Input v-model="userStore.formData.password" type="password" placeholder="请输入用户密码" maxlength="20" radius="md" />
             <p v-if="errors.password" class="text-xs text-destructive">{{ errors.password }}</p>
@@ -184,14 +219,26 @@ watch(() => userStore.formVisible, visible => {
           <!-- 手机号码 -->
           <Flex direction="column" :gap="4">
             <Label class="whitespace-nowrap">手机号码</Label>
-            <Input v-model="userStore.formData.phonenumber" placeholder="请输入手机号码" maxlength="11" radius="md" />
+            <Input
+              v-model="userStore.formData.phonenumber"
+              placeholder="请输入手机号码"
+              maxlength="11"
+              radius="md"
+              :disabled="!editable"
+            />
             <p v-if="errors.phonenumber" class="text-xs text-destructive">{{ errors.phonenumber }}</p>
           </Flex>
 
           <!-- 邮箱 -->
           <Flex direction="column" :gap="4">
             <Label class="whitespace-nowrap">邮箱</Label>
-            <Input v-model="userStore.formData.email" placeholder="请输入邮箱" maxlength="50" radius="md" />
+            <Input
+              v-model="userStore.formData.email"
+              placeholder="请输入邮箱"
+              maxlength="50"
+              radius="md"
+              :disabled="!editable"
+            />
             <p v-if="errors.email" class="text-xs text-destructive">{{ errors.email }}</p>
           </Flex>
 
@@ -200,6 +247,7 @@ watch(() => userStore.formVisible, visible => {
             <Label class="whitespace-nowrap">用户性别</Label>
             <Select
               :model-value="userStore.formData.sex"
+              :disabled="!editable"
               @update:model-value="value => (userStore.formData.sex = typeof value === 'string' ? value as '0' | '1' | '2' : '2')"
             >
               <SelectTrigger class="w-full" radius="md">
@@ -218,6 +266,7 @@ watch(() => userStore.formVisible, visible => {
             <Label class="whitespace-nowrap">状态</Label>
             <Select
               :model-value="userStore.formData.status"
+              :disabled="!editable"
               @update:model-value="value => (userStore.formData.status = typeof value === 'string' ? value as '0' | '1' : '0')"
             >
               <SelectTrigger class="w-full" radius="md">
@@ -238,6 +287,7 @@ watch(() => userStore.formVisible, visible => {
               :model-value="userStore.formData.postIds ?? []"
               :options="postSelectOptions"
               placeholder="请选择岗位"
+              :disabled="!editable"
               @update:model-value="value => (userStore.formData.postIds = value)"
             />
           </Flex>
@@ -249,6 +299,7 @@ watch(() => userStore.formVisible, visible => {
               :model-value="userStore.formData.roleIds ?? []"
               :options="roleSelectOptions"
               placeholder="请选择角色"
+              :disabled="!editable"
               @update:model-value="value => (userStore.formData.roleIds = value)"
             />
           </Flex>
@@ -256,18 +307,35 @@ watch(() => userStore.formVisible, visible => {
           <!-- 备注 -->
           <Flex direction="column" :gap="4" class="col-span-2">
             <Label class="whitespace-nowrap">备注</Label>
-            <Textarea v-model="userStore.formData.remark" placeholder="请输入内容" />
+            <Textarea v-model="userStore.formData.remark" placeholder="请输入内容" :disabled="!editable" />
           </Flex>
         </div>
+      </template>
 
-        <DialogFooter class="gap-2">
+      <DialogFooter class="gap-2">
+        <Button
+          v-if="isView"
+          variant="outline"
+          radius="md"
+          type="button"
+          @click="userStore.closeForm()"
+        >
+          关闭
+        </Button>
+        <template v-else>
           <Button variant="outline" radius="md" type="button" @click="userStore.closeForm()">取消</Button>
-          <Button color="primary" radius="md" type="button" :disabled="submitting" @click="handleSubmit">
+          <Button
+            color="primary"
+            radius="md"
+            type="button"
+            :disabled="userStore.formLoading || submitting"
+            @click="handleSubmit"
+          >
             <Loader2 v-if="submitting" class="animate-spin" />
             确定
           </Button>
-        </DialogFooter>
-      </template>
+        </template>
+      </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
