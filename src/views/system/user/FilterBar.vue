@@ -125,12 +125,12 @@ function handleReset() {
             :model-value="filters.status"
             @update:model-value="value => (filters.status = value as '0' | '1' | undefined)"
           >
-            <SelectTrigger class="w-45" radius="md">
+            <SelectTrigger>
               <SelectValue placeholder="全部" />
             </SelectTrigger>
-            <SelectContent radius="md">
-              <SelectItem value="0" radius="md">正常</SelectItem>
-              <SelectItem value="1" radius="md">停用</SelectItem>
+            <SelectContent>
+              <SelectItem value="0">正常</SelectItem>
+              <SelectItem value="1">停用</SelectItem>
             </SelectContent>
           </Select>
         </Flex>
