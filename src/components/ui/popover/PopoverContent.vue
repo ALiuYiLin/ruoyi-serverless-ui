@@ -9,20 +9,27 @@ import {
   useForwardPropsEmits,
 } from 'reka-ui'
 
+import { radiusClass, type Radius } from '../radius'
+
 defineOptions({
   inheritAttrs: false,
 })
 
 const props = withDefaults(
-  defineProps<PopoverContentProps & { class?: HTMLAttributes['class'] }>(),
+  defineProps<PopoverContentProps & {
+    class?: HTMLAttributes['class']
+    /** 圆角配置：默认 sm */
+    radius?: Radius
+  }>(),
   {
     align: 'center',
     sideOffset: 4,
+    radius: 'sm',
   },
 )
 const emits = defineEmits<PopoverContentEmits>()
 
-const delegatedProps = reactiveOmit(props, 'class')
+const delegatedProps = reactiveOmit(props, 'class', 'radius')
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
@@ -35,6 +42,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
       :class="
         cn(
           'bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/5 dark:ring-foreground/10 flex flex-col gap-4 rounded-3xl p-4 text-sm shadow-lg ring-1 duration-100 z-50 w-72 max-w-(--reka-popover-content-available-width) origin-(--reka-popover-content-transform-origin) outline-hidden',
+          radiusClass(props.radius),
           props.class,
         )
       "

@@ -63,6 +63,7 @@ function toggle(value: number, checked: boolean | 'indeterminate') {
         :disabled="option.disabled"
         @select.prevent
         @update:model-value="checked => toggle(option.value, checked)"
+        class="rounded-sm"
       >
         {{ option.label }}
       </DropdownMenuCheckboxItem>
