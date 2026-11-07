@@ -16,3 +16,7 @@ export * from "./system/post";
 export * from "./system/dict";
 export * from "./system/config";
 export * from "./system/notice";
+
+// Monitor 模块
+export * from "./monitor/operlog";
+export * from "./monitor/logininfor";
