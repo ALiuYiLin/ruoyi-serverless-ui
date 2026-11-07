@@ -6,8 +6,8 @@ export interface PostQueryParams extends PageDomain {
   postCode?: string;
   /** 岗位名称 */
   postName?: string;
-  /** 状态 */
-  status?: string;
+  /** 状态（0正常 1停用） */
+  status?: '0' | '1';
 }
 
 /** 岗位信息 */
