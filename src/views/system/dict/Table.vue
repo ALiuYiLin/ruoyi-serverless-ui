@@ -41,7 +41,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { download } from '@/utils/request'
+import { exportType } from '@/api/system/dict/type'
 import type { SysDictType } from '@/types'
 import useSystemDictTypeStore from '@/store/system/dict'
 
@@ -120,7 +120,7 @@ async function handleConfirmDelete() {
 }
 
 function handleExport() {
-  download('system/dict/type/export', { ...dictStore.queryParams }, `dict_type_${new Date().getTime()}.xlsx`)
+  exportType(dictStore.queryParams)
 }
 </script>
 

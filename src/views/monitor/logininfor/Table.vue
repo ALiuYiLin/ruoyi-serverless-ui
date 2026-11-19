@@ -41,7 +41,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { download } from '@/utils/request'
+import { exportLogininfor } from '@/api/monitor/logininfor'
 import type { SysLogininfor } from '@/types'
 import useSystemLogininforStore from '@/store/system/logininfor'
 
@@ -151,7 +151,7 @@ async function handleConfirmClean() {
 }
 
 function handleExport() {
-  download('monitor/logininfor/export', { ...logininforStore.queryParams }, `logininfor_${new Date().getTime()}.xlsx`)
+  exportLogininfor(logininforStore.queryParams)
 }
 </script>
 

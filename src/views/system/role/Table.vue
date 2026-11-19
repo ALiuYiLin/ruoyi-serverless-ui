@@ -50,7 +50,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { download } from '@/utils/request'
+import { exportRole } from '@/api/system/role'
 import type { SysRole } from '@/types'
 import useSystemRoleStore from '@/store/system/role'
 
@@ -152,7 +152,7 @@ async function handleConfirmDelete() {
 
 /** 导出 */
 function handleExport() {
-  download('system/role/export', { ...roleStore.queryParams }, `role_${new Date().getTime()}.xlsx`)
+  exportRole(roleStore.queryParams)
 }
 </script>
 

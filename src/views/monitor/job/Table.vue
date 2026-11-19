@@ -43,7 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { download } from '@/utils/request'
+import { exportJob } from '@/api/monitor/job'
 import type { SysJob } from '@/types'
 import useSystemJobStore from '@/store/system/job'
 import JobLogDialog from './JobLogDialog.vue'
@@ -141,7 +141,7 @@ async function handleConfirmDelete() {
 }
 
 function handleExport() {
-  download('monitor/job/export', { ...jobStore.queryParams }, `job_${new Date().getTime()}.xlsx`)
+  exportJob(jobStore.queryParams)
 }
 
 const jobGroupLabel = (group?: string) => (group === 'SYSTEM' ? '系统' : '默认')

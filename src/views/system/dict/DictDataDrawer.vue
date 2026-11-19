@@ -57,8 +57,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { download } from '@/utils/request'
-import { addData, delData, getData, listData, updateData } from '@/api/system/dict/data'
+import { addData, delData, exportData, getData, listData, updateData } from '@/api/system/dict/data'
 import type { DictDataQueryParams, SysDictData } from '@/types'
 import useSystemDictTypeStore from '@/store/system/dict'
 
@@ -163,7 +162,7 @@ function handleReset() {
 }
 
 function handleExport() {
-  download('system/dict/data/export', { ...queryParams }, `dict_data_${new Date().getTime()}.xlsx`)
+  exportData(queryParams)
 }
 
 /** 数据表单 */

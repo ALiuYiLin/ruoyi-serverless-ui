@@ -41,7 +41,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { download } from '@/utils/request'
+import { exportOperlog } from '@/api/monitor/operlog'
 import type { SysOperLog } from '@/types'
 import useSystemOperlogStore from '@/store/system/operlog'
 import OperlogDetailDialog from './OperlogDetailDialog.vue'
@@ -127,7 +127,7 @@ async function handleConfirmClean() {
 }
 
 function handleExport() {
-  download('monitor/operlog/export', { ...operlogStore.queryParams }, `operlog_${new Date().getTime()}.xlsx`)
+  exportOperlog(operlogStore.queryParams)
 }
 </script>
 

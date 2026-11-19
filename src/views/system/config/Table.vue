@@ -40,7 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { download } from '@/utils/request'
+import { exportConfig } from '@/api/system/config'
 import type { SysConfig } from '@/types'
 import useSystemConfigStore from '@/store/system/config'
 
@@ -121,7 +121,7 @@ async function handleConfirmDelete() {
 }
 
 function handleExport() {
-  download('system/config/export', { ...configStore.queryParams }, `config_${new Date().getTime()}.xlsx`)
+  exportConfig(configStore.queryParams)
 }
 </script>
 

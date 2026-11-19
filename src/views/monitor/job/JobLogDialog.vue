@@ -47,8 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { download } from '@/utils/request'
-import { cleanJobLog, delJobLog, listJobLog } from '@/api/monitor/jobLog'
+import { cleanJobLog, delJobLog, exportJobLog, listJobLog } from '@/api/monitor/jobLog'
 import type { JobLogQueryParams, SysJob, SysJobLog } from '@/types'
 import JobLogDetailDialog from './JobLogDetailDialog.vue'
 
@@ -179,7 +178,7 @@ async function confirmClean() {
 }
 
 function handleExport() {
-  download('monitor/jobLog/export', { ...queryParams }, `job_log_${new Date().getTime()}.xlsx`)
+  exportJobLog(queryParams)
 }
 
 function openDetail(row: SysJobLog) {

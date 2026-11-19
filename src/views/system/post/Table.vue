@@ -47,7 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { download } from '@/utils/request'
+import { exportPost } from '@/api/system/post'
 import type { SysPost } from '@/types'
 import useSystemPostStore from '@/store/system/post'
 
@@ -132,7 +132,7 @@ async function handleConfirmDelete() {
 
 /** 导出 */
 function handleExport() {
-  download('system/post/export', { ...postStore.queryParams }, `post_${new Date().getTime()}.xlsx`)
+  exportPost(postStore.queryParams)
 }
 
 const skeletonRowCount = 8
