@@ -1,19 +1,19 @@
 import request from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { NoticeQueryParams, NoticeReadUserQueryParams, SysNotice, NoticeReadUser, SysNoticeTopResult, AjaxResult, TableDataInfo } from '@/types'
 
 // 公告模块接口集中管理
-export enum NOTICE_API {
-  NOTICE_LIST = 'GET:/system/notice/list',
-  NOTICE_DETAIL = 'GET:/system/notice/:noticeId',
-  NOTICE_ADD = 'POST:/system/notice',
-  NOTICE_UPDATE = 'PUT:/system/notice',
-  NOTICE_DEL = 'DELETE:/system/notice/:noticeId',
-  NOTICE_LIST_TOP = 'GET:/system/notice/listTop',
-  NOTICE_MARK_READ = 'POST:/system/notice/markRead',
-  NOTICE_MARK_READ_ALL = 'POST:/system/notice/markReadAll',
-  NOTICE_READ_USERS = 'GET:/system/notice/readUsers/list'
-}
+export const NOTICE_API = {
+  NOTICE_LIST: 'GET:/system/notice/list',
+  NOTICE_DETAIL: 'GET:/system/notice/:noticeId',
+  NOTICE_ADD: 'POST:/system/notice',
+  NOTICE_UPDATE: 'PUT:/system/notice',
+  NOTICE_DEL: 'DELETE:/system/notice/:noticeId',
+  NOTICE_LIST_TOP: 'GET:/system/notice/listTop',
+  NOTICE_MARK_READ: 'POST:/system/notice/markRead',
+  NOTICE_MARK_READ_ALL: 'POST:/system/notice/markReadAll',
+  NOTICE_READ_USERS: 'GET:/system/notice/readUsers/list'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询公告列表
 export function listNotice(query: NoticeQueryParams): Promise<TableDataInfo<SysNotice>> {

@@ -1,18 +1,18 @@
 import request, { download } from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, DictTypeQueryParams, SysDictType, TableDataInfo } from '@/types'
 
 // 字典类型模块接口集中管理
-export enum DICT_TYPE_API {
-  DICT_TYPE_LIST = 'GET:/system/dict/type/list',
-  DICT_TYPE_DETAIL = 'GET:/system/dict/type/:dictId',
-  DICT_TYPE_ADD = 'POST:/system/dict/type',
-  DICT_TYPE_UPDATE = 'PUT:/system/dict/type',
-  DICT_TYPE_DEL = 'DELETE:/system/dict/type/:dictId',
-  DICT_TYPE_REFRESH_CACHE = 'DELETE:/system/dict/type/refreshCache',
-  DICT_TYPE_OPTION_SELECT = 'GET:/system/dict/type/optionselect',
-  DICT_TYPE_EXPORT = 'POST:/system/dict/type/export'
-}
+export const DICT_TYPE_API = {
+  DICT_TYPE_LIST: 'GET:/system/dict/type/list',
+  DICT_TYPE_DETAIL: 'GET:/system/dict/type/:dictId',
+  DICT_TYPE_ADD: 'POST:/system/dict/type',
+  DICT_TYPE_UPDATE: 'PUT:/system/dict/type',
+  DICT_TYPE_DEL: 'DELETE:/system/dict/type/:dictId',
+  DICT_TYPE_REFRESH_CACHE: 'DELETE:/system/dict/type/refreshCache',
+  DICT_TYPE_OPTION_SELECT: 'GET:/system/dict/type/optionselect',
+  DICT_TYPE_EXPORT: 'POST:/system/dict/type/export'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询字典类型列表
 export function listType(query: DictTypeQueryParams): Promise<TableDataInfo<SysDictType>> {

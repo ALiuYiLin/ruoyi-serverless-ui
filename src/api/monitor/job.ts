@@ -1,18 +1,18 @@
 import request, { download } from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, JobQueryParams, SysJob, TableDataInfo } from '@/types'
 
 // 定时任务模块接口集中管理
-export enum JOB_API {
-  JOB_LIST = 'GET:/monitor/job/list',
-  JOB_DETAIL = 'GET:/monitor/job/:jobId',
-  JOB_ADD = 'POST:/monitor/job',
-  JOB_UPDATE = 'PUT:/monitor/job',
-  JOB_DEL = 'DELETE:/monitor/job/:jobId',
-  JOB_CHANGE_STATUS = 'PUT:/monitor/job/changeStatus',
-  JOB_RUN = 'PUT:/monitor/job/run',
-  JOB_EXPORT = 'POST:/monitor/job/export'
-}
+export const JOB_API = {
+  JOB_LIST: 'GET:/monitor/job/list',
+  JOB_DETAIL: 'GET:/monitor/job/:jobId',
+  JOB_ADD: 'POST:/monitor/job',
+  JOB_UPDATE: 'PUT:/monitor/job',
+  JOB_DEL: 'DELETE:/monitor/job/:jobId',
+  JOB_CHANGE_STATUS: 'PUT:/monitor/job/changeStatus',
+  JOB_RUN: 'PUT:/monitor/job/run',
+  JOB_EXPORT: 'POST:/monitor/job/export'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询定时任务列表
 export function listJob(query: JobQueryParams): Promise<TableDataInfo<SysJob>> {

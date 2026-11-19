@@ -1,25 +1,25 @@
 import request from '@/utils/request'
 import { parseStrEmpty } from "@/utils/ruoyi"
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { UserQueryParams, UserFormDataResult, UserProfileResult, UserAuthRoleResult, UserProfileAvatarResult, SysUser, SysUserRoles, AjaxResult, TableDataInfo, TreeSelect } from '@/types'
 
 // 用户模块接口集中管理
-export enum USER_API {
-  USER_LIST = 'GET:/system/user/list',
-  USER_DETAIL = 'GET:/system/user/:id',
-  USER_ADD = 'POST:/system/user',
-  USER_UPDATE = 'PUT:/system/user',
-  USER_DEL = 'DELETE:/system/user/:userId',
-  USER_RESET_PWD = 'PUT:/system/user/resetPwd',
-  USER_CHANGE_STATUS = 'PUT:/system/user/changeStatus',
-  USER_PROFILE = 'GET:/system/user/profile',
-  USER_PROFILE_UPDATE = 'PUT:/system/user/profile',
-  USER_PROFILE_UPDATE_PWD = 'PUT:/system/user/profile/updatePwd',
-  USER_PROFILE_AVATAR = 'POST:/system/user/profile/avatar',
-  USER_AUTH_ROLE = 'GET:/system/user/authRole/:userId',
-  USER_AUTH_ROLE_SAVE = 'PUT:/system/user/authRole',
-  USER_DEPT_TREE = 'GET:/system/user/deptTree'
-}
+export const USER_API = {
+  USER_LIST: 'GET:/system/user/list',
+  USER_DETAIL: 'GET:/system/user/:id',
+  USER_ADD: 'POST:/system/user',
+  USER_UPDATE: 'PUT:/system/user',
+  USER_DEL: 'DELETE:/system/user/:userId',
+  USER_RESET_PWD: 'PUT:/system/user/resetPwd',
+  USER_CHANGE_STATUS: 'PUT:/system/user/changeStatus',
+  USER_PROFILE: 'GET:/system/user/profile',
+  USER_PROFILE_UPDATE: 'PUT:/system/user/profile',
+  USER_PROFILE_UPDATE_PWD: 'PUT:/system/user/profile/updatePwd',
+  USER_PROFILE_AVATAR: 'POST:/system/user/profile/avatar',
+  USER_AUTH_ROLE: 'GET:/system/user/authRole/:userId',
+  USER_AUTH_ROLE_SAVE: 'PUT:/system/user/authRole',
+  USER_DEPT_TREE: 'GET:/system/user/deptTree'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询用户列表
 export function listUser(query: UserQueryParams): Promise<TableDataInfo<SysUser>> {

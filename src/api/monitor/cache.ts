@@ -1,17 +1,17 @@
 import request from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, CacheMonitorData, SysCache } from '@/types'
 
 // 缓存监控模块接口集中管理
-export enum CACHE_API {
-  CACHE_INFO = 'GET:/monitor/cache',
-  CACHE_NAMES = 'GET:/monitor/cache/getNames',
-  CACHE_KEYS = 'GET:/monitor/cache/getKeys/:cacheName',
-  CACHE_VALUE = 'GET:/monitor/cache/getValue/:cacheName/:cacheKey',
-  CACHE_CLEAR_NAME = 'DELETE:/monitor/cache/clearCacheName/:cacheName',
-  CACHE_CLEAR_KEY = 'DELETE:/monitor/cache/clearCacheKey/:cacheKey',
-  CACHE_CLEAR_ALL = 'DELETE:/monitor/cache/clearCacheAll'
-}
+export const CACHE_API = {
+  CACHE_INFO: 'GET:/monitor/cache',
+  CACHE_NAMES: 'GET:/monitor/cache/getNames',
+  CACHE_KEYS: 'GET:/monitor/cache/getKeys/:cacheName',
+  CACHE_VALUE: 'GET:/monitor/cache/getValue/:cacheName/:cacheKey',
+  CACHE_CLEAR_NAME: 'DELETE:/monitor/cache/clearCacheName/:cacheName',
+  CACHE_CLEAR_KEY: 'DELETE:/monitor/cache/clearCacheKey/:cacheKey',
+  CACHE_CLEAR_ALL: 'DELETE:/monitor/cache/clearCacheAll'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询缓存详细
 export function getCache(): Promise<AjaxResult<CacheMonitorData>> {

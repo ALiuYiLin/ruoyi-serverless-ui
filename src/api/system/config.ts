@@ -1,18 +1,18 @@
 import request, { download } from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { ConfigQueryParams, SysConfig, AjaxResult, TableDataInfo } from '@/types'
 
 // 参数配置模块接口集中管理
-export enum CONFIG_API {
-  CONFIG_LIST = 'GET:/system/config/list',
-  CONFIG_DETAIL = 'GET:/system/config/:configId',
-  CONFIG_KEY = 'GET:/system/config/configKey/:configKey',
-  CONFIG_ADD = 'POST:/system/config',
-  CONFIG_UPDATE = 'PUT:/system/config',
-  CONFIG_DEL = 'DELETE:/system/config/:configId',
-  CONFIG_REFRESH_CACHE = 'DELETE:/system/config/refreshCache',
-  CONFIG_EXPORT = 'POST:/system/config/export'
-}
+export const CONFIG_API = {
+  CONFIG_LIST: 'GET:/system/config/list',
+  CONFIG_DETAIL: 'GET:/system/config/:configId',
+  CONFIG_KEY: 'GET:/system/config/configKey/:configKey',
+  CONFIG_ADD: 'POST:/system/config',
+  CONFIG_UPDATE: 'PUT:/system/config',
+  CONFIG_DEL: 'DELETE:/system/config/:configId',
+  CONFIG_REFRESH_CACHE: 'DELETE:/system/config/refreshCache',
+  CONFIG_EXPORT: 'POST:/system/config/export'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询参数列表
 export function listConfig(query: ConfigQueryParams): Promise<TableDataInfo<SysConfig>> {

@@ -1,14 +1,14 @@
 import request, { download } from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, OperlogQueryParams, SysOperLog, TableDataInfo } from '@/types'
 
 // 操作日志模块接口集中管理
-export enum OPERLOG_API {
-  OPERLOG_LIST = 'GET:/monitor/operlog/list',
-  OPERLOG_DEL = 'DELETE:/monitor/operlog/:operId',
-  OPERLOG_CLEAN = 'DELETE:/monitor/operlog/clean',
-  OPERLOG_EXPORT = 'POST:/monitor/operlog/export'
-}
+export const OPERLOG_API = {
+  OPERLOG_LIST: 'GET:/monitor/operlog/list',
+  OPERLOG_DEL: 'DELETE:/monitor/operlog/:operId',
+  OPERLOG_CLEAN: 'DELETE:/monitor/operlog/clean',
+  OPERLOG_EXPORT: 'POST:/monitor/operlog/export'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询操作日志列表
 export function list(query: OperlogQueryParams): Promise<TableDataInfo<SysOperLog>> {

@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type {
   AjaxResult,
   MenuQueryParams,
@@ -10,16 +10,16 @@ import type {
 } from '@/types'
 
 // 菜单模块接口集中管理
-export enum SYS_MENU_API {
-  SYS_MENU_LIST = 'GET:/system/menu/list',
-  SYS_MENU_DETAIL = 'GET:/system/menu/:menuId',
-  SYS_MENU_TREESELECT = 'GET:/system/menu/treeselect',
-  SYS_MENU_ROLE_TREESELECT = 'GET:/system/menu/roleMenuTreeselect/:roleId',
-  SYS_MENU_ADD = 'POST:/system/menu',
-  SYS_MENU_UPDATE = 'PUT:/system/menu',
-  SYS_MENU_UPDATE_SORT = 'PUT:/system/menu/updateSort',
-  SYS_MENU_DEL = 'DELETE:/system/menu/:menuId'
-}
+export const SYS_MENU_API = {
+  SYS_MENU_LIST: 'GET:/system/menu/list',
+  SYS_MENU_DETAIL: 'GET:/system/menu/:menuId',
+  SYS_MENU_TREESELECT: 'GET:/system/menu/treeselect',
+  SYS_MENU_ROLE_TREESELECT: 'GET:/system/menu/roleMenuTreeselect/:roleId',
+  SYS_MENU_ADD: 'POST:/system/menu',
+  SYS_MENU_UPDATE: 'PUT:/system/menu',
+  SYS_MENU_UPDATE_SORT: 'PUT:/system/menu/updateSort',
+  SYS_MENU_DEL: 'DELETE:/system/menu/:menuId'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询菜单列表
 export function listMenu(query?: MenuQueryParams): Promise<AjaxResult<SysMenu[]>> {

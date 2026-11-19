@@ -1,14 +1,14 @@
 import request, { download } from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, JobLogQueryParams, SysJobLog, TableDataInfo } from '@/types'
 
 // 调度日志模块接口集中管理
-export enum JOB_LOG_API {
-  JOB_LOG_LIST = 'GET:/monitor/jobLog/list',
-  JOB_LOG_DEL = 'DELETE:/monitor/jobLog/:jobLogId',
-  JOB_LOG_CLEAN = 'DELETE:/monitor/jobLog/clean',
-  JOB_LOG_EXPORT = 'POST:/monitor/jobLog/export'
-}
+export const JOB_LOG_API = {
+  JOB_LOG_LIST: 'GET:/monitor/jobLog/list',
+  JOB_LOG_DEL: 'DELETE:/monitor/jobLog/:jobLogId',
+  JOB_LOG_CLEAN: 'DELETE:/monitor/jobLog/clean',
+  JOB_LOG_EXPORT: 'POST:/monitor/jobLog/export'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询调度日志列表
 export function listJobLog(query: JobLogQueryParams): Promise<TableDataInfo<SysJobLog>> {

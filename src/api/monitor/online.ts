@@ -1,12 +1,12 @@
 import request from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, OnlineQueryParams, SysUserOnline, TableDataInfo } from '@/types'
 
 // 在线用户模块接口集中管理
-export enum ONLINE_API {
-  ONLINE_LIST = 'GET:/monitor/online/list',
-  ONLINE_FORCE_LOGOUT = 'DELETE:/monitor/online/:tokenId'
-}
+export const ONLINE_API = {
+  ONLINE_LIST: 'GET:/monitor/online/list',
+  ONLINE_FORCE_LOGOUT: 'DELETE:/monitor/online/:tokenId'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询在线用户列表
 export function list(query: OnlineQueryParams): Promise<TableDataInfo<SysUserOnline>> {

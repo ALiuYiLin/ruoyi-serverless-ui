@@ -1,6 +1,14 @@
 /** 支持的小写 HTTP 方法，可直接当作 axios 的方法名使用 */
 export type ApiMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
+/**
+ * `METHOD:path` 形式的接口定义：方法大写、路径以 `/` 开头，可含 `:param` 占位符。
+ *
+ * - 静态路径：`'GET:/system/user/list'`
+ * - 带路径参数：`'GET:/system/user/:id'`、`'GET:/monitor/cache/getValue/:cacheName/:cacheKey'`
+ */
+export type ApiDefinition = `${Uppercase<ApiMethod>}:/${string}`;
+
 /** `useAPI` 的拆解结果 */
 export interface ApiEndpoint {
   /** 小写 HTTP 方法 */
@@ -18,14 +26,15 @@ const SUPPORTED_METHODS = new Set<ApiMethod>([
 ]);
 
 /**
- * 把各模块 `Xxx_API` 枚举里的 `METHOD:path` 拆成 `{ method, basePath }`。
+ * 把各模块 `Xxx_API` 常量里的 `METHOD:path` 拆成 `{ method, basePath }`。
  *
  * - `method` 统一转小写，可直接作为 axios 的请求方法使用
  * - `basePath` 截断到第一个路径参数之前，并保留末尾 `/`
  *   （`PUT:/users/:id` → `/users/`，`GET:/users` → `/users`）
  *
- * 路径参数由调用方按枚举里的顺序拼接在 `basePath` 之后；若为多段参数，
- * 段与段之间补 `/`，需要转义的参数自行 `encodeURIComponent`。
+ * 定义里的 `:id` 只是占位说明，`useAPI` 不解析参数名：它把路径截断到第一个
+ * `/:` 之前作为 `basePath`，实际的参数值由调用方按定义里的顺序拼在 `basePath`
+ * 之后；若为多段参数，段与段之间补 `/`，需要转义的参数自行 `encodeURIComponent`。
  * 若路径参数出现在中间（如 `/a/:id/b`），请改用 `request` + 完整 url，
  * 因为 `basePath` 会在第一个参数处被截断。
  *
@@ -33,15 +42,15 @@ const SUPPORTED_METHODS = new Set<ApiMethod>([
  * 而 axios 实例的 baseURL 是 `/api`，两者不是一回事，避免混淆。
  *
  * @example
- * const { method, basePath } = useAPI(USER_API.USER_DETAIL);
+ * const { method, basePath } = useAPI(USER_API.DETAIL);
  * // method   === 'get'
  * // basePath === '/system/user/'
  * request({ url: basePath + userId, method });
  *
- * @param api `Xxx_API` 枚举成员
- * @throws 枚举值不是合法的 `METHOD:path` 格式时抛错
+ * @param api 模块 API 常量成员，聚合入口为 `APIS.USER_DETAIL`
+ * @throws 接口定义不是合法的 `METHOD:path` 格式时抛错
  */
-export function useAPI(api: string): ApiEndpoint {
+export function useAPI(api: ApiDefinition): ApiEndpoint {
   const separator = api.indexOf(':');
 
   if (separator <= 0) {

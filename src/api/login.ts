@@ -1,16 +1,16 @@
 import request from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { SysRegister, LoginInfoResult, UserInfoResult, CaptchaInfoResult, AjaxResult } from '@/types'
 
 // 登录模块接口集中管理
-export enum LOGIN_API {
-  LOGIN = 'POST:/login',
-  REGISTER = 'POST:/register',
-  GET_INFO = 'GET:/getInfo',
-  UNLOCK_SCREEN = 'POST:/unlockscreen',
-  LOGOUT = 'POST:/logout',
-  CAPTCHA_IMAGE = 'GET:/captchaImage'
-}
+export const LOGIN_API = {
+  LOGIN: 'POST:/login',
+  REGISTER: 'POST:/register',
+  GET_INFO: 'GET:/getInfo',
+  UNLOCK_SCREEN: 'POST:/unlockscreen',
+  LOGOUT: 'POST:/logout',
+  CAPTCHA_IMAGE: 'GET:/captchaImage'
+} as const satisfies Record<string, ApiDefinition>
 
 // 登录方法
 export function login(username: string, password: string, code: string, uuid: string): Promise<LoginInfoResult> {

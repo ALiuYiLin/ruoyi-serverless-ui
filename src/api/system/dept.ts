@@ -1,17 +1,17 @@
 import request from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, DeptQueryParams, DeptSortParams, SysDept } from '@/types'
 
 // 部门模块接口集中管理
-export enum DEPT_API {
-  DEPT_LIST = 'GET:/system/dept/list',
-  DEPT_LIST_EXCLUDE_CHILD = 'GET:/system/dept/list/exclude/:deptId',
-  DEPT_DETAIL = 'GET:/system/dept/:deptId',
-  DEPT_ADD = 'POST:/system/dept',
-  DEPT_UPDATE = 'PUT:/system/dept',
-  DEPT_UPDATE_SORT = 'PUT:/system/dept/updateSort',
-  DEPT_DEL = 'DELETE:/system/dept/:deptId'
-}
+export const DEPT_API = {
+  DEPT_LIST: 'GET:/system/dept/list',
+  DEPT_LIST_EXCLUDE_CHILD: 'GET:/system/dept/list/exclude/:deptId',
+  DEPT_DETAIL: 'GET:/system/dept/:deptId',
+  DEPT_ADD: 'POST:/system/dept',
+  DEPT_UPDATE: 'PUT:/system/dept',
+  DEPT_UPDATE_SORT: 'PUT:/system/dept/updateSort',
+  DEPT_DEL: 'DELETE:/system/dept/:deptId'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询部门列表
 export function listDept(query?: DeptQueryParams): Promise<AjaxResult<SysDept[]>> {

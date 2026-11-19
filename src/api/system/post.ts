@@ -1,16 +1,16 @@
 import request, { download } from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, PostQueryParams, SysPost, TableDataInfo } from '@/types'
 
 // 岗位模块接口集中管理
-export enum POST_API {
-  POST_LIST = 'GET:/system/post/list',
-  POST_DETAIL = 'GET:/system/post/:postId',
-  POST_ADD = 'POST:/system/post',
-  POST_UPDATE = 'PUT:/system/post',
-  POST_DEL = 'DELETE:/system/post/:postId',
-  POST_EXPORT = 'POST:/system/post/export'
-}
+export const POST_API = {
+  POST_LIST: 'GET:/system/post/list',
+  POST_DETAIL: 'GET:/system/post/:postId',
+  POST_ADD: 'POST:/system/post',
+  POST_UPDATE: 'PUT:/system/post',
+  POST_DEL: 'DELETE:/system/post/:postId',
+  POST_EXPORT: 'POST:/system/post/export'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询岗位列表
 export function listPost(query: PostQueryParams): Promise<TableDataInfo<SysPost>> {

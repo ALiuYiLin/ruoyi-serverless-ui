@@ -1,17 +1,17 @@
 import request, { download } from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, DictDataQueryParams, SysDictData, TableDataInfo } from '@/types'
 
 // 字典数据模块接口集中管理
-export enum DICT_DATA_API {
-  DICT_DATA_LIST = 'GET:/system/dict/data/list',
-  DICT_DATA_DETAIL = 'GET:/system/dict/data/:dictCode',
-  DICT_DATA_BY_TYPE = 'GET:/system/dict/data/type/:dictType',
-  DICT_DATA_ADD = 'POST:/system/dict/data',
-  DICT_DATA_UPDATE = 'PUT:/system/dict/data',
-  DICT_DATA_DEL = 'DELETE:/system/dict/data/:dictCode',
-  DICT_DATA_EXPORT = 'POST:/system/dict/data/export'
-}
+export const DICT_DATA_API = {
+  DICT_DATA_LIST: 'GET:/system/dict/data/list',
+  DICT_DATA_DETAIL: 'GET:/system/dict/data/:dictCode',
+  DICT_DATA_BY_TYPE: 'GET:/system/dict/data/type/:dictType',
+  DICT_DATA_ADD: 'POST:/system/dict/data',
+  DICT_DATA_UPDATE: 'PUT:/system/dict/data',
+  DICT_DATA_DEL: 'DELETE:/system/dict/data/:dictCode',
+  DICT_DATA_EXPORT: 'POST:/system/dict/data/export'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询字典数据列表
 export function listData(query: DictDataQueryParams): Promise<TableDataInfo<SysDictData>> {

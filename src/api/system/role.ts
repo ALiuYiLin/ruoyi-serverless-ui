@@ -1,5 +1,5 @@
 import request, { download } from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type {
   AjaxResult,
   AuthUserQueryParams,
@@ -12,20 +12,20 @@ import type {
 } from '@/types'
 
 // 角色模块接口集中管理
-export enum ROLE_API {
-  ROLE_LIST = 'GET:/system/role/list',
-  ROLE_DETAIL = 'GET:/system/role/:roleId',
-  ROLE_ADD = 'POST:/system/role',
-  ROLE_UPDATE = 'PUT:/system/role',
-  ROLE_DATA_SCOPE = 'PUT:/system/role/dataScope',
-  ROLE_CHANGE_STATUS = 'PUT:/system/role/changeStatus',
-  ROLE_DEL = 'DELETE:/system/role/:roleId',
-  ROLE_EXPORT = 'POST:/system/role/export',
-  ROLE_AUTH_USER_ALLOCATED_LIST = 'GET:/system/role/authUser/allocatedList',
-  ROLE_AUTH_USER_UNALLOCATED_LIST = 'GET:/system/role/authUser/unallocatedList',
-  ROLE_AUTH_USER_SELECT_ALL = 'PUT:/system/role/authUser/selectAll',
-  ROLE_DEPT_TREE = 'GET:/system/role/deptTree/:roleId'
-}
+export const ROLE_API = {
+  ROLE_LIST: 'GET:/system/role/list',
+  ROLE_DETAIL: 'GET:/system/role/:roleId',
+  ROLE_ADD: 'POST:/system/role',
+  ROLE_UPDATE: 'PUT:/system/role',
+  ROLE_DATA_SCOPE: 'PUT:/system/role/dataScope',
+  ROLE_CHANGE_STATUS: 'PUT:/system/role/changeStatus',
+  ROLE_DEL: 'DELETE:/system/role/:roleId',
+  ROLE_EXPORT: 'POST:/system/role/export',
+  ROLE_AUTH_USER_ALLOCATED_LIST: 'GET:/system/role/authUser/allocatedList',
+  ROLE_AUTH_USER_UNALLOCATED_LIST: 'GET:/system/role/authUser/unallocatedList',
+  ROLE_AUTH_USER_SELECT_ALL: 'PUT:/system/role/authUser/selectAll',
+  ROLE_DEPT_TREE: 'GET:/system/role/deptTree/:roleId'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询角色列表
 export function listRole(query: RoleQueryParams): Promise<TableDataInfo<SysRole>> {

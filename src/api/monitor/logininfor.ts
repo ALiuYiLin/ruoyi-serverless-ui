@@ -1,15 +1,15 @@
 import request, { download } from '@/utils/request'
-import { useAPI } from '@/utils/useAPI'
+import { useAPI, type ApiDefinition } from '@/utils/useAPI'
 import type { AjaxResult, LogininforQueryParams, SysLogininfor, TableDataInfo } from '@/types'
 
 // 登录日志模块接口集中管理
-export enum LOGININFOR_API {
-  LOGININFOR_LIST = 'GET:/monitor/logininfor/list',
-  LOGININFOR_DEL = 'DELETE:/monitor/logininfor/:infoId',
-  LOGININFOR_UNLOCK = 'GET:/monitor/logininfor/unlock/:userName',
-  LOGININFOR_CLEAN = 'DELETE:/monitor/logininfor/clean',
-  LOGININFOR_EXPORT = 'POST:/monitor/logininfor/export'
-}
+export const LOGININFOR_API = {
+  LOGININFOR_LIST: 'GET:/monitor/logininfor/list',
+  LOGININFOR_DEL: 'DELETE:/monitor/logininfor/:infoId',
+  LOGININFOR_UNLOCK: 'GET:/monitor/logininfor/unlock/:userName',
+  LOGININFOR_CLEAN: 'DELETE:/monitor/logininfor/clean',
+  LOGININFOR_EXPORT: 'POST:/monitor/logininfor/export'
+} as const satisfies Record<string, ApiDefinition>
 
 // 查询登录日志列表
 export function list(query: LogininforQueryParams): Promise<TableDataInfo<SysLogininfor>> {
