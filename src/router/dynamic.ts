@@ -1,24 +1,25 @@
-import Layout from '@/layout/base'
-import ParentView from '@/components/ParentView/index.vue'
 import { ROUTE_PATHS } from './routes'
 import type { AppRouteRecord } from '@/types'
 
 /**
- * 全部业务路由（不含 constantRoutes），仅作静态配置，当前不参与运行时。
+ * 全部业务路由（不含 constantRoutes）。
  *
- * path 全部取自 `./routes` 的 ROUTE_PATHS，与公共路由、侧边栏菜单共用同一份
- * 路径常量；因为都是完整地址（vue-router 中绝对路径不再与父级拼接），
- * 本文件同时也是业务可访问 path 的清单，与后端菜单树一一对应。
+ * 运行时由 permission store 按用户有效权限（`GET /getPerms` 返回的 paths）过滤后
+ * 注册：`VITE_ROUTE_SOURCE=static`（默认）走本文件，`backend` 回退到旧版
+ * `/getRouters` 菜单树。path 全部取自 `./routes` 的 ROUTE_PATHS，且都是完整地址
+ * （vue-router 中绝对路径不再与父级拼接），与公共路由、侧边栏共用同一份路径常量。
  *
- * 运行时动态路由仍由 permission store 根据后端 `/getRouters` 返回的菜单生成
- * （见 src/permission.ts）；后续若要改成纯前端路由表，可直接把 dynamicRoutes
- * 交给 router.addRoute。
+ * 注意：Layout / ParentView 必须用懒加载（`() => import(...)`），不能顶层 import。
+ * permission store 被布局（AppSidebar）引用，本文件又被 store 引用，同时布局组件
+ * 还依赖 store：顶层 import Layout 会形成
+ * `layout → AppSidebar → store/permission → router/dynamic → layout` 的循环，
+ * 访问 `component: Layout` 时命中 TDZ（Cannot access 'Layout' before initialization）。
  */
 export const dynamicRoutes: AppRouteRecord[] = [
   {
     path: ROUTE_PATHS.system.root,
     name: 'System',
-    component: Layout,
+    component: () => import('@/layout/base'),
     redirect: ROUTE_PATHS.system.user,
     meta: { title: '系统管理', icon: 'system' },
     children: [
@@ -73,7 +74,7 @@ export const dynamicRoutes: AppRouteRecord[] = [
       {
         path: ROUTE_PATHS.system.log.root,
         name: 'Log',
-        component: ParentView,
+        component: () => import('@/components/ParentView/index.vue'),
         meta: { title: '日志管理', icon: 'log' },
         children: [
           {
@@ -95,7 +96,7 @@ export const dynamicRoutes: AppRouteRecord[] = [
   {
     path: ROUTE_PATHS.monitor.root,
     name: 'Monitor',
-    component: Layout,
+    component: () => import('@/layout/base'),
     redirect: ROUTE_PATHS.monitor.online,
     meta: { title: '系统监控', icon: 'monitor' },
     children: [

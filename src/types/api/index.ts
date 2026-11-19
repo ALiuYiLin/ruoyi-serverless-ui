@@ -7,6 +7,9 @@ export * from "./common";
 export * from "./login";
 export * from "./menu";
 
+// 权限模块
+export * from "./perm";
+
 // System 模块
 export * from "./system/user";
 export * from "./system/role";

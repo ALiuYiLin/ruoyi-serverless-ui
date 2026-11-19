@@ -1,16 +1,31 @@
 import type { RouteRecordRaw } from 'vue-router'
 import auth from '@/plugins/auth'
-import router, { constantRoutes, dynamicRoutes } from '@/router'
+import router, { constantRoutes, dynamicRoutes as extraRoutes } from '@/router'
+import { dynamicRoutes as staticRoutes } from '@/router/dynamic'
 import { getRouters } from '@/api/menu'
 import Layout from '@/layout/base'
 import ParentView from '@/components/ParentView/index.vue'
+import { collectGroupPaths, filterRoutes, type UserAccess } from '@/perm/access'
 import type { AppRouteRecord, LazyRouteComponent, RouterVo } from '@/types'
 
 // 匹配views里面所有的.vue文件
 const modules = import.meta.glob('./../../views/**/*.vue')
 
+/**
+ * 路由来源：
+ * - `static`（默认）：本地 `dynamicRoutes` + 权限集过滤
+ * - `backend`：回退到 `/getRouters` 返回的菜单树（旧逻辑，便于回滚）
+ */
+const ROUTE_SOURCE = (import.meta.env.VITE_ROUTE_SOURCE ?? 'static') as 'static' | 'backend'
+
 /** 权限路由 store 的 state */
 interface PermissionState {
+  /** 权限是否已加载（替代原来用 roles.length === 0 判断） */
+  loaded: boolean
+  /** 已授权路径（含被保留的分组路径） */
+  paths: string[]
+  /** 已授权接口 */
+  apis: string[]
   /** 全部路由（constantRoutes + 权限动态路由） */
   routes: AppRouteRecord[]
   /** 权限过滤后的动态路由 */
@@ -27,6 +42,9 @@ const usePermissionStore = defineStore(
   'permission',
   {
     state: (): PermissionState => ({
+      loaded: false,
+      paths: [],
+      apis: [],
       routes: [],
       addRoutes: [],
       defaultRoutes: [],
@@ -47,26 +65,69 @@ const usePermissionStore = defineStore(
       setSidebarRouters(routes: AppRouteRecord[]) {
         this.sidebarRouters = routes
       },
-      generateRoutes(): Promise<AppRouteRecord[]> {
-        return new Promise(resolve => {
-          // 向后端请求路由数据
-          getRouters().then(res => {
-            const sdata = JSON.parse(JSON.stringify(res.data)) as RouterVo[]
-            const rdata = JSON.parse(JSON.stringify(res.data)) as RouterVo[]
-            const defaultData = JSON.parse(JSON.stringify(res.data)) as RouterVo[]
-            const sidebarRoutes = filterAsyncRouter(sdata)
-            const rewriteRoutes = filterAsyncRouter(rdata, true)
-            const defaultRoutes = filterAsyncRouter(defaultData)
-            const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
-            // AppRouteRecord 含若依扩展字段，与 vue-router 的路由联合类型不兼容，边界处断言
-            asyncRoutes.forEach(route => { router.addRoute(route as unknown as RouteRecordRaw) })
-            this.setRoutes(rewriteRoutes)
-            this.setSidebarRouters(constantRoutes.concat(sidebarRoutes))
-            this.setDefaultRoutes(sidebarRoutes)
-            this.setTopbarRoutes(defaultRoutes)
-            resolve(rewriteRoutes)
-          })
-        })
+      /** 是否可访问某个路由路径 */
+      hasPath(path: string) {
+        return this.paths.includes(path)
+      },
+      /** 是否可调用某个接口 */
+      hasApi(api?: string) {
+        return !!api && this.apis.includes(api)
+      },
+      /** 重置权限状态（退出登录 / 鉴权失败时） */
+      resetAccess() {
+        this.loaded = false
+        this.paths = []
+        this.apis = []
+        this.routes = []
+        this.addRoutes = []
+        this.defaultRoutes = []
+        this.topbarRouters = []
+        this.sidebarRouters = []
+      },
+      /**
+       * 生成可访问路由。
+       *
+       * static：按权限集裁剪本地 `dynamicRoutes`；
+       * backend：走 `/getRouters` 旧逻辑。
+       */
+      async generateRoutes(access: UserAccess): Promise<AppRouteRecord[]> {
+        if (ROUTE_SOURCE === 'backend') {
+          const routes = await this.generateRoutesFromBackend()
+          this.paths = [...access.paths]
+          this.apis = [...access.apis]
+          this.loaded = true
+          return routes
+        }
+
+        const routes = filterRoutes(staticRoutes, access.paths)
+        // 分组路径本身不在权限集里，并入后支持直接访问 /system、/system/log 等（走 redirect）
+        this.paths = [...new Set([...access.paths, ...collectGroupPaths(routes)])]
+        this.apis = [...access.apis]
+        this.setRoutes(routes)
+        this.setSidebarRouters(constantRoutes.concat(routes))
+        this.setDefaultRoutes(routes)
+        this.setTopbarRoutes(routes)
+        this.loaded = true
+        return routes
+      },
+      /** 旧逻辑：后端菜单树 → 路由（回退用） */
+      async generateRoutesFromBackend(): Promise<AppRouteRecord[]> {
+        const res = await getRouters()
+        const sdata = JSON.parse(JSON.stringify(res.data)) as RouterVo[]
+        const rdata = JSON.parse(JSON.stringify(res.data)) as RouterVo[]
+        const defaultData = JSON.parse(JSON.stringify(res.data)) as RouterVo[]
+        const sidebarRoutes = filterAsyncRouter(sdata)
+        const rewriteRoutes = filterAsyncRouter(rdata, true)
+        const defaultRoutes = filterAsyncRouter(defaultData)
+        const asyncRoutes = filterDynamicRoutes(extraRoutes)
+        // AppRouteRecord 含若依扩展字段，与 vue-router 的路由联合类型不兼容，边界处断言
+        asyncRoutes.forEach(route => { router.addRoute(route as unknown as RouteRecordRaw) })
+
+        this.setRoutes(rewriteRoutes)
+        this.setSidebarRouters(constantRoutes.concat(sidebarRoutes))
+        this.setDefaultRoutes(sidebarRoutes)
+        this.setTopbarRoutes(defaultRoutes)
+        return rewriteRoutes
       }
     }
   })

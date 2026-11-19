@@ -22,6 +22,7 @@ import { LOGININFOR_API } from './monitor/logininfor'
 import { ONLINE_API } from './monitor/online'
 import { OPERLOG_API } from './monitor/operlog'
 import { SERVER_API } from './monitor/server'
+import { PERM_API } from './perm'
 import { CONFIG_API } from './system/config'
 import { DEPT_API } from './system/dept'
 import { DICT_DATA_API } from './system/dict/data'
@@ -48,6 +49,7 @@ export const APIS = {
   ...OPERLOG_API,
   ...LOGININFOR_API,
   ...ONLINE_API,
+  ...PERM_API,
   ...JOB_API,
   ...JOB_LOG_API,
   ...SERVER_API,
