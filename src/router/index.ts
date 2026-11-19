@@ -2,6 +2,7 @@ import { createWebHistory, createRouter } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 /* Layout */
 import Layout from '@/layout/base'
+import { ROUTE_PATHS } from './routes'
 import type { AppRouteRecord } from '@/types'
 
 /**
@@ -29,43 +30,43 @@ import type { AppRouteRecord } from '@/types'
 // 公共路由
 export const constantRoutes: AppRouteRecord[] = [
   {
-    path: '/redirect',
+    path: ROUTE_PATHS.common.redirect,
     component: Layout,
     hidden: true,
     children: [
       {
-        path: '/redirect/:path(.*)',
+        path: ROUTE_PATHS.common.redirectChild,
         component: () => import('@/views/redirect/index.vue')
       }
     ]
   },
   {
-    path: '/login',
+    path: ROUTE_PATHS.common.login,
     component: () => import('@/views/login.vue'),
     hidden: true
   },
   {
-    path: '/register',
+    path: ROUTE_PATHS.common.register,
     component: () => import('@/views/register.vue'),
     hidden: true
   },
   {
-    path: "/:pathMatch(.*)*",
+    path: ROUTE_PATHS.common.notFound,
     component: () => import('@/views/error/404.vue'),
     hidden: true
   },
   {
-    path: '/401',
+    path: ROUTE_PATHS.common.unauthorized,
     component: () => import('@/views/error/401.vue'),
     hidden: true
   },
   {
-    path: '',
+    path: ROUTE_PATHS.common.root,
     component: Layout,
-    redirect: '/index',
+    redirect: ROUTE_PATHS.common.index,
     children: [
       {
-        path: '/index',
+        path: ROUTE_PATHS.common.index,
         component: () => import('@/views/index.vue'),
         name: 'Index',
         meta: { title: '首页', icon: 'dashboard', affix: true }
@@ -73,7 +74,7 @@ export const constantRoutes: AppRouteRecord[] = [
     ]
   },
   {
-    path: '/lock',
+    path: ROUTE_PATHS.common.lock,
     component: () => import('@/views/lock.vue'),
     hidden: true,
     meta: { title: '锁定屏幕' }
