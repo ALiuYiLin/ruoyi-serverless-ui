@@ -10,7 +10,8 @@
     "build:prod": "vite build",
     "build:stage": "vite build --mode staging",
     "preview": "vite preview",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "gen:perm": "node scripts/perm/index.ts"
   },
   "repository": {
     "type": "git",

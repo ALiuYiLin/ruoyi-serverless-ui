@@ -19,7 +19,12 @@ export const base: PermBody = {
 /** 登录后基础权限：动态菜单、个人中心、首页公告、锁屏解锁 */
 export const base_auth: PermBody = {
   paths: [
-    ROUTE_PATHS.common.index
+    ROUTE_PATHS.common.index,
+    // 登录后才能访问的工具页：刷新中转、锁屏、401
+    ROUTE_PATHS.common.redirect,
+    ROUTE_PATHS.common.redirectChild,
+    ROUTE_PATHS.common.lock,
+    ROUTE_PATHS.common.unauthorized
   ],
   apis: [
     APIS.LOGOUT,

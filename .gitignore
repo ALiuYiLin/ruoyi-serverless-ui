@@ -10,6 +10,9 @@ tests/**/coverage/
 tests/e2e/reports
 selenium-debug.log
 
+# 权限工具输出
+tmp/
+
 # Editor directories and files
 .idea
 .vscode
